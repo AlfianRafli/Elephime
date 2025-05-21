@@ -109,7 +109,7 @@
     }
 
     // === Render List Function ===
-    function renderAnimeList(animeArray, hideEpisode = false) {
+    function renderAnimeList(animeArray, hideEpisode = false, hideReleased = false) {
         animeListElem.innerHTML = "";
 
         if (!animeArray || !animeArray.length) {
@@ -125,11 +125,12 @@
         animeArray.forEach(anime => {
             const card = createAnimeCard(
                 anime.title,
-                anime.episode,
-                anime.img,
-                anime.released, // Tambahkan released
+                anime.episode ?? null,
+                anime.img ?? null,
+                anime.released ?? null, // Tambahkan released
                 anime,
-                hideEpisode
+                hideEpisode,
+                hideReleased
             );
             animeListElem.appendChild(card);
         });
@@ -264,12 +265,12 @@
             // Handle different response structures
             if (data.results) {
                 // Genre/search response
-                renderAnimeList(data.results, !!currentSearchQuery);
+                renderAnimeList(data.results, true, true);
                 totalPages = data.totalPages || 1;
                 currentPage = data.currentPage || 1;
             } else {
                 // Home response
-                renderAnimeList(data, false);
+                renderAnimeList(data);
                 // Update total pages based on response
                 totalPages = data.length > 0 ? currentPage + 1 : currentPage;
             }

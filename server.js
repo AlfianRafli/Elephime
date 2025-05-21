@@ -21,7 +21,7 @@ app.get("/API/home", async(req, res) => {
 app.get("/API/search", async(req, res) => {
   const query = req.query?.q || "";
   const anime = await otakudesu.search(query);
-  res.json(anime);
+  res.json({ results: anime });
 })
 
 app.get("/watch", (req, res) => {
