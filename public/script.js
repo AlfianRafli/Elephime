@@ -330,7 +330,7 @@ async function loadAnimeData() {
         const pageItems = history.slice(startIdx, endIdx);
         
         pageItems.forEach(anime => {
-            const  = createAnimeCard(
+            const card = createAnimeCard(
                 anime.title,
                 anime.episode,
                 anime.img,

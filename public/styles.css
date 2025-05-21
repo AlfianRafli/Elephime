@@ -508,6 +508,47 @@ body.dark .pagination-container button.active {
     100% { transform: rotate(360deg); }
 }
 
+.main-footer {
+    background-color: var(--color-card-bg-light);
+    color: var(--color-gray);
+    padding: var(--spacing-lg) 0;
+    text-align: center;
+    margin-top: auto;
+    transition: var(--transition);
+}
+
+body.dark .main-footer {
+    background-color: var(--color-card-bg-dark);
+    color: var(--color-text-dark);
+}
+
+.footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.social-links a {
+    color: var(--color-gray);
+    font-size: 1.2rem;
+    transition: var(--transition);
+}
+
+.social-links a:hover {
+    color: var(--color-primary);
+}
+
+body.dark .social-links a {
+    color: var(--color-text-dark);
+}
+
 /* ===== Empty State ===== */
 .empty-state {
     text-align: center;
