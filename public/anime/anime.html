@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Anime details on Flynime - Your ultimate anime streaming platform">
+        <title>Elephime - Anime Details</title>
+        <link rel="stylesheet" href="anime.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+    <body>
+        <div id="loading-screen">
+            <div class="spinner" aria-label="Loading"></div>
+            <p class="loading-text">Loading anime details...</p>
+        </div>
+        
+        <header class="main-header">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-shapes logo-icon"></i>
+                    <span>Elephime</span>
+                </a>
+                <button
+                    class="dark-mode-toggle"
+                    id="theme-toggle-button"
+                    aria-label="Toggle Dark Mode"
+                    title="Toggle Dark Mode"
+                >
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="anime-container">
+            <article class="anime-detail">
+                <section class="anime-poster">
+                    <div class="anime-image" aria-label="Anime cover image"></div>
+                </section>
+                
+                <section class="anime-info">
+                  <br />
+                    <h1 class="anime-title">
+                        <i class="fas fa-film"></i>
+                        <span id="title-text">Loading...</span>
+                    </h1>
+                    
+                    <div class="anime-meta">
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <span id="rating-text">-</span>
+                        </div>
+                        <div class="meta-grid" aria-label="Anime information"></div>
+                    </div>
+                    
+                    <div class="synopsis">
+                        <h2>
+                            <i class="fas fa-book-open"></i>
+                            Synopsis
+                        </h2>
+                        <p class="synopsis-text">Loading synopsis...</p>
+                    </div>
+                    
+                    <div class="episodes">
+                        <h2>
+                            <i class="fas fa-list-ol"></i>
+                            Episodes
+                        </h2>
+                        <div class="episodes-list" aria-label="Episode list"></div>
+                    </div>
+                </section>
+            </article>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>&copy; 2025 Flynime - Your Ultimate Anime Platform</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </footer>
+        
+        <script src="anime.js"></script>
+    </body>
+</html>

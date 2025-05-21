@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Flynime - Your ultimate anime streaming platform">
+        <title>Elephime - Watch Anime Online</title>
+        <link rel="stylesheet" href="styles.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+    <body>
+        <div id="loading-screen">
+            <div class="spinner" aria-label="Loading"></div>
+            <p class="loading-text">Loading your anime...</p>
+        </div>
+        
+        <header class="main-header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <i class="fas fa-shapes logo-icon"></i>
+                    <span>Elephime</span>
+                </h1>
+                <nav class="main-nav">
+                    <button class="nav-btn active" data-section="animeBox">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </button>
+                    <button class="nav-btn" data-section="historyBox">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </button>
+                </nav>
+                <button
+                    class="dark-mode-toggle"
+                    id="darkModeToggle"
+                    aria-label="Toggle Dark Mode"
+                    title="Toggle Dark Mode"
+                >
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="search-section">
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <input
+                            type="search"
+                            id="searchInput"
+                            class="search-input"
+                            placeholder="Search anime..."
+                            aria-label="Search anime"
+                            autocomplete="off"
+                        />
+                        <span class="search-icon" aria-hidden="true">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="genre-filter-container">
+                    <select id="genreSelect" class="genre-select">
+                        <option value="">All Genres</option>
+                        <option value="action">Action</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="comedy">Comedy</option>
+                        <option value="drama">Drama</option>
+                        <option value="fantasy">Fantasy</option>
+                        <option value="horror">Horror</option>
+                        <option value="mystery">Mystery</option>
+                        <option value="romance">Romance</option>
+                        <option value="sci-fi">Sci-Fi</option>
+                        <option value="slice of life">Slice of Life</option>
+                        <option value="sports">Sports</option>
+                        <option value="supernatural">Supernatural</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="anime-section">
+                <div class="anime-box active" id="animeBox">
+                    <h2 class="anime-box-title">
+                        <i class="fas fa-fire"></i>
+                        Popular Anime
+                    </h2>
+                    <div class="anime-box-grid" id="animeList"></div>
+                    <div id="pagination" class="pagination-container"></div>
+                </div>
+
+                <div class="anime-box" id="historyBox">
+                    <h2 class="anime-box-title">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        Watch History
+                    </h2>
+                    <div class="anime-box-grid" id="historyList"></div>
+                    <div id="historyPagination" class="pagination-container"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>&copy; 2025 Flynime - Your Ultimate Anime Platform</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </footer>
+        
+        <script src="script.js"></script>
+    </body>
+</html>

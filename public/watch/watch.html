@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Watch anime on Flynime - Your ultimate anime streaming platform">
+        <title>Elephime - Watch Anime</title>
+        <link rel="stylesheet" href="watch.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+    <body>
+        <div id="loading-screen">
+            <div class="spinner" aria-label="Loading"></div>
+            <p class="loading-text">Loading anime...</p>
+        </div>
+        
+        <header class="main-header">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-shapes logo-icon"></i>
+                    <span>Elephime</span>
+                </a>
+                <button
+                    class="dark-mode-toggle"
+                    id="theme-toggle-button"
+                    aria-label="Toggle Dark Mode"
+                    title="Toggle Dark Mode"
+                >
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="watch-container">
+            <h1 id="video-title" class="video-title">
+                <i class="fas fa-play-circle"></i>
+                <span id="title-text">Loading Anime...</span>
+            </h1>
+            
+            <div class="video-wrapper" id="video-wrapper">
+                <div class="video-placeholder">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading video player...</p>
+                </div>
+            </div>
+            
+            <div class="video-controls">
+                <div class="quality-controls">
+                    <h3><i class="fas fa-tv"></i> Quality</h3>
+                    <nav class="resolutions" id="resolution-buttons" aria-label="Video resolutions"></nav>
+                </div>
+                
+                <div class="server-controls">
+                    <h3><i class="fas fa-server"></i> Server</h3>
+                    <nav class="servers" id="server-buttons" aria-label="Video servers"></nav>
+                </div>
+                
+                <div class="download-controls">
+                    <h3><i class="fas fa-download"></i> Downloads</h3>
+                    <div class="downloads" id="download-links" aria-label="Download links"></div>
+                </div>
+            </div>
+            
+            <div class="episode-navigation">
+                <button id="prev-episode" class="episode-nav-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Previous Episode
+                </button>
+                <a href="/anime" id="all-episodes" class="episode-nav-btn">
+                    <i class="fas fa-list"></i>
+                    All Episodes
+                </a>
+                <button id="next-episode" class="episode-nav-btn">
+                    Next Episode
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>&copy; 2025 Flynime - Your Ultimate Anime Platform</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </footer>
+        
+        <script src="watch.js"></script>
+    </body>
+</html>
