@@ -19,16 +19,16 @@
     function initializeDarkMode() {
         const storedDarkMode = localStorage.getItem("darkMode") === "true";
         document.body.classList.toggle("dark", storedDarkMode);
-        darkModeToggle.innerHTML = storedDarkMode 
-            ? '<i class="fas fa-sun"></i>' 
+        darkModeToggle.innerHTML = storedDarkMode
+            ? '<i class="fas fa-sun"></i>'
             : '<i class="fas fa-moon"></i>';
     }
 
     darkModeToggle.addEventListener("click", () => {
         const isDark = document.body.classList.toggle("dark");
         localStorage.setItem("darkMode", isDark);
-        darkModeToggle.innerHTML = isDark 
-            ? '<i class="fas fa-sun"></i>' 
+        darkModeToggle.innerHTML = isDark
+            ? '<i class="fas fa-sun"></i>'
             : '<i class="fas fa-moon"></i>';
     });
 
@@ -38,12 +38,12 @@
             // Update active state
             navButtons.forEach(btn => btn.classList.remove("active"));
             button.classList.add("active");
-            
+
             // Show corresponding box
             const targetBox = button.dataset.section;
             animeBoxes.forEach(box => box.classList.remove("active"));
             document.getElementById(targetBox).classList.add("active");
-            
+
             // If history tab is clicked, refresh history
             if (targetBox === "historyBox") {
                 renderHistory();
@@ -52,95 +52,88 @@
     });
 
     // === Card Creator Function ===
-function createAnimeCard(title, episode, imageUrl, released, data, hideEpisode = false) {
-    const card = document.createElement("div");
-    card.className = "anime-card";
-    
-    const imgWrapper = document.createElement("div");
-    imgWrapper.className = "anime-image-wrapper";
-    
-    const img = document.createElement("img");
-    img.className = "anime-image";
-    img.alt = `${title} cover image`;
-    img.src = imageUrl;
-    img.loading = "lazy";
-    
-    const info = document.createElement("div");
-    info.className = "anime-info";
-    
-    const animeTitle = document.createElement("h3");
-    animeTitle.className = "anime-title";
-    animeTitle.textContent = title;
-    info.appendChild(animeTitle);
+    function createAnimeCard(
+        title,
+        episode,
+        imageUrl,
+        released,
+        data,
+        hideEpisode = false,
+        hideReleased = false
+    ) {
+        const card = document.createElement("div");
+        card.className = "anime-card";
 
-    // Add released information
-    const animeReleased = document.createElement("p");
-    animeReleased.className = "anime-released";
-    animeReleased.textContent = `Released: ${released || 'Unknown'}`;
-    info.appendChild(animeReleased);
-    
-    if (!hideEpisode) {
-        const animeEpisode = document.createElement("p");
-        animeEpisode.className = "anime-episode";
-        animeEpisode.textContent = `Episode ${episode}`;
-        info.appendChild(animeEpisode);
-    }
-    
-    imgWrapper.appendChild(img);
-    card.appendChild(imgWrapper);
-    card.appendChild(info);
-    
-    card.addEventListener("click", () => {
-            // Add to history
-            const history = JSON.parse(localStorage.getItem("history")) || [];
-            const existingIndex = history.findIndex(item => item.id === data.id);
-            
-            if (existingIndex >= 0) {
-                history.splice(existingIndex, 1);
-            }
-            
-            history.unshift({
-                id: data.id,
-                title: data.title,
-                episode: data.episode,
-                img: data.img,
-                timestamp: new Date().toISOString()
-            });
-            
-            localStorage.setItem("history", JSON.stringify(history.slice(0, 50)));
+        const imgWrapper = document.createElement("div");
+        imgWrapper.className = "anime-image-wrapper";
+
+        const img = document.createElement("img");
+        img.className = "anime-image";
+        img.alt = `${title} cover image`;
+        img.src = imageUrl;
+        img.loading = "lazy";
+
+        const info = document.createElement("div");
+        info.className = "anime-info";
+
+        const animeTitle = document.createElement("h3");
+        animeTitle.className = "anime-title";
+        animeTitle.textContent = title;
+        info.appendChild(animeTitle);
+
+        // Add released information
+        if (!hideReleased) {
+            const animeReleased = document.createElement("p");
+            animeReleased.className = "anime-released";
+            animeReleased.textContent = `Released: ${released || "Unknown"}`;
+            info.appendChild(animeReleased);
+        }
+
+        if (!hideEpisode) {
+            const animeEpisode = document.createElement("p");
+            animeEpisode.className = "anime-episode";
+            animeEpisode.textContent = `Episode ${episode}`;
+            info.appendChild(animeEpisode);
+        }
+
+        imgWrapper.appendChild(img);
+        card.appendChild(imgWrapper);
+        card.appendChild(info);
+
+        card.addEventListener("click", () => {
             localStorage.setItem("selectedAnime", JSON.stringify(data));
             window.location.href = "/anime";
         });
-        
+
         return card;
     }
 
-// === Render List Function ===
-function renderAnimeList(animeArray, hideEpisode = false) {
-    animeListElem.innerHTML = "";
-    
-    if (!animeArray || !animeArray.length) {
-        animeListElem.innerHTML = `
+    // === Render List Function ===
+    function renderAnimeList(animeArray, hideEpisode = false) {
+        animeListElem.innerHTML = "";
+
+        if (!animeArray || !animeArray.length) {
+            animeListElem.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-tv"></i>
                 <p>No anime found</p>
             </div>
         `;
-        return;
+            return;
+        }
+
+        animeArray.forEach(anime => {
+            const card = createAnimeCard(
+                anime.title,
+                anime.episode,
+                anime.img,
+                anime.released, // Tambahkan released
+                anime,
+                hideEpisode
+            );
+            animeListElem.appendChild(card);
+        });
     }
-    
-    animeArray.forEach(anime => {
-        const card = createAnimeCard(
-            anime.title,
-            anime.episode,
-            anime.img,
-            anime.released, // Tambahkan released
-            anime,
-            hideEpisode
-        );
-        animeListElem.appendChild(card);
-    });
-}
 
     // === Pagination ===
     function renderPagination() {
@@ -149,18 +142,21 @@ function renderAnimeList(animeArray, hideEpisode = false) {
             pagination.innerHTML = "";
             return;
         }
-        
+
         pagination.innerHTML = "";
-        
+
         const maxVisibleButtons = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
+        let startPage = Math.max(
+            1,
+            currentPage - Math.floor(maxVisibleButtons / 2)
+        );
         let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
-        
+
         // Adjust if we're at the end
         if (endPage - startPage + 1 < maxVisibleButtons) {
             startPage = Math.max(1, endPage - maxVisibleButtons + 1);
         }
-        
+
         // Previous button
         if (currentPage > 1) {
             const prevBtn = document.createElement("button");
@@ -171,7 +167,7 @@ function renderAnimeList(animeArray, hideEpisode = false) {
             });
             pagination.appendChild(prevBtn);
         }
-        
+
         // First page
         if (startPage > 1) {
             const firstBtn = document.createElement("button");
@@ -181,7 +177,7 @@ function renderAnimeList(animeArray, hideEpisode = false) {
                 loadAnimeData();
             });
             pagination.appendChild(firstBtn);
-            
+
             if (startPage > 2) {
                 const ellipsis = document.createElement("span");
                 ellipsis.textContent = "...";
@@ -189,7 +185,7 @@ function renderAnimeList(animeArray, hideEpisode = false) {
                 pagination.appendChild(ellipsis);
             }
         }
-        
+
         // Page buttons
         for (let i = startPage; i <= endPage; i++) {
             const btn = document.createElement("button");
@@ -201,7 +197,7 @@ function renderAnimeList(animeArray, hideEpisode = false) {
             });
             pagination.appendChild(btn);
         }
-        
+
         // Last page
         if (endPage < totalPages) {
             if (endPage < totalPages - 1) {
@@ -210,7 +206,7 @@ function renderAnimeList(animeArray, hideEpisode = false) {
                 ellipsis.className = "pagination-ellipsis";
                 pagination.appendChild(ellipsis);
             }
-            
+
             const lastBtn = document.createElement("button");
             lastBtn.textContent = totalPages;
             lastBtn.addEventListener("click", () => {
@@ -219,7 +215,7 @@ function renderAnimeList(animeArray, hideEpisode = false) {
             });
             pagination.appendChild(lastBtn);
         }
-        
+
         // Next button
         if (currentPage < totalPages) {
             const nextBtn = document.createElement("button");
@@ -232,58 +228,65 @@ function renderAnimeList(animeArray, hideEpisode = false) {
         }
     }
 
-// === Load Anime Data ===
-async function loadAnimeData() {
-    showLoader();
-    
-    try {
-        let url;
-        if (currentSearchQuery.trim()) {
-            url = `/API/search?q=${encodeURIComponent(currentSearchQuery)}`;
-        } else if (currentGenre) {
-            url = `/API/genre?genre=${encodeURIComponent(currentGenre)}&page=${currentPage}`;
-        } else {
-            url = `/API/home?page=${currentPage}`;
-        }
-        
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Fetch error");
-        
-        const data = await res.json();
-        
-        // Handle empty home response
-        if (currentPage > 1 && !currentSearchQuery && !currentGenre && data.length === 0) {
-            currentPage = 1;
-            await loadAnimeData();
-            return;
-        }
+    // === Load Anime Data ===
+    async function loadAnimeData() {
+        showLoader();
 
-        // Handle different response structures
-        if (data.results) {
-            // Genre/search response
-            renderAnimeList(data.results, !!currentSearchQuery);
-            totalPages = data.totalPages || 1;
-            currentPage = data.currentPage || 1;
-        } else {
-            // Home response
-            renderAnimeList(data, false);
-            // Update total pages based on response
-            totalPages = data.length > 0 ? currentPage + 1 : currentPage;
-        }
-        
-        renderPagination();
-    } catch (err) {
-        console.error("Fetch error:", err);
-        animeListElem.innerHTML = `
+        try {
+            let url;
+            if (currentSearchQuery.trim()) {
+                url = `/API/search?q=${encodeURIComponent(currentSearchQuery)}`;
+            } else if (currentGenre) {
+                url = `/API/genre?genre=${encodeURIComponent(
+                    currentGenre
+                )}&page=${currentPage}`;
+            } else {
+                url = `/API/home?page=${currentPage}`;
+            }
+
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("Fetch error");
+
+            const data = await res.json();
+
+            // Handle empty home response
+            if (
+                currentPage > 1 &&
+                !currentSearchQuery &&
+                !currentGenre &&
+                data.length === 0
+            ) {
+                currentPage = 1;
+                await loadAnimeData();
+                return;
+            }
+
+            // Handle different response structures
+            if (data.results) {
+                // Genre/search response
+                renderAnimeList(data.results, !!currentSearchQuery);
+                totalPages = data.totalPages || 1;
+                currentPage = data.currentPage || 1;
+            } else {
+                // Home response
+                renderAnimeList(data, false);
+                // Update total pages based on response
+                totalPages = data.length > 0 ? currentPage + 1 : currentPage;
+            }
+
+            renderPagination();
+        } catch (err) {
+            console.error("Fetch error:", err);
+            animeListElem.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-exclamation-triangle"></i>
                 <p>Error loading anime</p>
             </div>
         `;
-    } finally {
-        hideLoader();
+        } finally {
+            hideLoader();
+        }
     }
-}
 
     // === Search Functionality ===
     let debounceTimeout;
@@ -310,7 +313,7 @@ async function loadAnimeData() {
         const history = JSON.parse(localStorage.getItem("history")) || [];
         const historyBox = document.getElementById("historyBox");
         const historyList = document.getElementById("historyList");
-        
+
         if (!history.length) {
             historyList.innerHTML = `
                 <div class="empty-state">
@@ -320,26 +323,28 @@ async function loadAnimeData() {
             `;
             return;
         }
-        
+
         historyList.innerHTML = "";
-        
+
         const itemsPerPage = 10;
         const totalPages = Math.ceil(history.length / itemsPerPage);
         const startIdx = (page - 1) * itemsPerPage;
         const endIdx = startIdx + itemsPerPage;
         const pageItems = history.slice(startIdx, endIdx);
-        
+
         pageItems.forEach(anime => {
             const card = createAnimeCard(
                 anime.title,
                 anime.episode,
                 anime.img,
+                undefined,
                 anime,
-                false
+                false,
+                true
             );
             historyList.appendChild(card);
         });
-        
+
         renderHistoryPagination(page, totalPages);
     }
 
@@ -349,28 +354,32 @@ async function loadAnimeData() {
             pagination.innerHTML = "";
             return;
         }
-        
+
         pagination.innerHTML = "";
-        
+
         // Previous button
         if (currentPage > 1) {
             const prevBtn = document.createElement("button");
             prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            prevBtn.addEventListener("click", () => renderHistory(currentPage - 1));
+            prevBtn.addEventListener("click", () =>
+                renderHistory(currentPage - 1)
+            );
             pagination.appendChild(prevBtn);
         }
-        
+
         // Current page indicator
         const pageInfo = document.createElement("span");
         pageInfo.className = "pagination-info";
         pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
         pagination.appendChild(pageInfo);
-        
+
         // Next button
         if (currentPage < totalPages) {
             const nextBtn = document.createElement("button");
             nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            nextBtn.addEventListener("click", () => renderHistory(currentPage + 1));
+            nextBtn.addEventListener("click", () =>
+                renderHistory(currentPage + 1)
+            );
             pagination.appendChild(nextBtn);
         }
     }
