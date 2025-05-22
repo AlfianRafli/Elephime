@@ -1,0 +1,3 @@
+# AN OPEN SOURCE ANIME STREAMING WEBSITE
+
+> [! WARNING] I don't use an official API.
