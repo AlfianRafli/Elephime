@@ -14,7 +14,7 @@ app.get("/", (req, res) => {
 
 app.get("/API/home", async(req, res) => {
   const page = req.query?.page || 1;
-  const result = await otakudesu.home(page);
+  const result = await otakudesu.getHomePage(page);
   res.json(result);
 });
 
