@@ -3,17 +3,34 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Anime details on Flynime - Your ultimate anime streaming platform">
+        <meta
+            name="description"
+            content="Anime details on Flynime - Your ultimate anime streaming platform"
+        />
+        <link rel="icon" href="../assets/favico.png" type="image/png" />
+
+        <meta
+            property="og:image"
+            content="https://elephant.my.id/assets/favico.png"
+        />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta name="theme-color" content="#718096" />
+
         <title>Elephime - Anime Details</title>
         <link rel="stylesheet" href="anime.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
     </head>
     <body>
         <div id="loading-screen">
             <div class="spinner" aria-label="Loading"></div>
             <p class="loading-text">Loading anime details...</p>
         </div>
-        
+
         <header class="main-header">
             <div class="header-content">
                 <a href="/" class="logo">
@@ -34,24 +51,30 @@
         <main class="anime-container">
             <article class="anime-detail">
                 <section class="anime-poster">
-                    <div class="anime-image" aria-label="Anime cover image"></div>
+                    <div
+                        class="anime-image"
+                        aria-label="Anime cover image"
+                    ></div>
                 </section>
-                
+
                 <section class="anime-info">
-                  <br />
+                    <br />
                     <h1 class="anime-title">
                         <i class="fas fa-film"></i>
                         <span id="title-text">Loading...</span>
                     </h1>
-                    
+
                     <div class="anime-meta">
                         <div class="rating">
                             <i class="fas fa-star"></i>
                             <span id="rating-text">-</span>
                         </div>
-                        <div class="meta-grid" aria-label="Anime information"></div>
+                        <div
+                            class="meta-grid"
+                            aria-label="Anime information"
+                        ></div>
                     </div>
-                    
+
                     <div class="synopsis">
                         <h2>
                             <i class="fas fa-book-open"></i>
@@ -59,13 +82,16 @@
                         </h2>
                         <p class="synopsis-text">Loading synopsis...</p>
                     </div>
-                    
+
                     <div class="episodes">
                         <h2>
                             <i class="fas fa-list-ol"></i>
                             Episodes
                         </h2>
-                        <div class="episodes-list" aria-label="Episode list"></div>
+                        <div
+                            class="episodes-list"
+                            aria-label="Episode list"
+                        ></div>
                     </div>
                 </section>
             </article>
@@ -75,11 +101,18 @@
             <div class="footer-content">
                 <p>&copy; 2025 Flynime</p>
                 <div class="social-links">
-                    <a href="https://github.com/AlfianRafli/Elephime" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    <a
+                        href="https://github.com/AlfianRafli/Elephime"
+                        aria-label="GitHub"
+                        ><i class="fab fa-github"></i
+                    ></a>
+                    <a href="https://discord.gg/efhwMuuR9n" aria-label="Discord"
+                        ><i class="fa-brands fa-discord"></i
+                    ></a>
                 </div>
             </div>
         </footer>
-        
+
         <script src="anime.js"></script>
     </body>
 </html>
