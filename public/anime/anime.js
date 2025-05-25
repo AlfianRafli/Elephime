@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ratingText = document.querySelector('.rating span');
     const synopsisText = document.querySelector('.synopsis-text');
     const episodesList = document.querySelector('.episodes-list');
+    const bookmarkButton = document.getElementById('bookmark-button');
     
     // Show loading screen
     loadingScreen.style.display = 'flex';
@@ -33,6 +34,50 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize dark mode
     initializeDarkMode();
 
+    // === Bookmark Functions ===
+    function initializeBookmarkButton(animeData) {
+        const bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+        const isBookmarked = bookmarks.some(bookmark => 
+            bookmark.url === animeData.url || bookmark.link === animeData.link
+        );
+        updateBookmarkButton(isBookmarked);
+        
+        bookmarkButton.addEventListener('click', () => {
+            toggleBookmark(animeData, bookmarks);
+        });
+    }
+
+    function updateBookmarkButton(isBookmarked) {
+        if (isBookmarked) {
+            bookmarkButton.innerHTML = '<i class="fas fa-bookmark"></i> <span>Bookmarked</span>';
+            bookmarkButton.classList.add('bookmarked');
+        } else {
+            bookmarkButton.innerHTML = '<i class="far fa-bookmark"></i> <span>Bookmark</span>';
+            bookmarkButton.classList.remove('bookmarked');
+        }
+    }
+
+    function toggleBookmark(animeData, bookmarks) {
+        const index = bookmarks.findIndex(bookmark => 
+            bookmark.url === animeData.url || bookmark.link === animeData.link
+        );
+        
+        if (index === -1) {
+            bookmarks.push({
+                title: animeData.title,
+                img: animeData.img,
+                url: animeData.url || animeData.link,
+                addedAt: new Date().toISOString()
+            });
+            updateBookmarkButton(true);
+        } else {
+            bookmarks.splice(index, 1);
+            updateBookmarkButton(false);
+        }
+        
+        localStorage.setItem('bookmarks', JSON.stringify(bookmarks.slice(0, 100)));
+    }
+
     // === Load Anime Data ===
     async function loadAnimeData() {
         try {
@@ -44,14 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('No anime selected');
             }
 
-            // Fetch anime data
             const response = await fetch(`/API/anime?url=${encodeURIComponent(selectedUrl)}`);
             if (!response.ok) throw new Error('Failed to fetch anime data');
             
             const data = await response.json();
             if (!data?.title) throw new Error('Invalid anime data');
 
-            // Update UI
             updateAnimeUI(data, storage, watched);
         } catch (error) {
             console.error('Error loading anime data:', error);
@@ -63,18 +106,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update Anime UI
     function updateAnimeUI(data, storage, watched) {
-        // Set title
         animeTitle.textContent = data.title;
 
-        // Set image
         if (storage?.img) {
             animeImage.style.backgroundImage = `url('${storage.img}')`;
         }
 
-        // Set rating
         ratingText.textContent = data.rating ? `${data.rating} / 10` : '-';
 
-        // Set meta info
         metaGrid.innerHTML = '';
         const metaItems = [
             data.genres,
@@ -92,10 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
             metaGrid.appendChild(item);
         });
 
-        // Set synopsis
         synopsisText.textContent = data.sinopsis || 'No synopsis available.';
 
-        // Set episodes
         episodesList.innerHTML = '';
         if (data.episodes?.length) {
             data.episodes.forEach((ep, index) => {
@@ -118,11 +155,17 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             episodesList.innerHTML = '<p>No episodes available</p>';
         }
+
+        // Initialize bookmark button
+        const animeData = {
+            ...data,
+            url: storage?.url || storage?.link,
+            img: storage?.img
+        };
+        initializeBookmarkButton(animeData);
     }
 
-    // Handle episode click
     function handleEpisodeClick(data, storage, episode, index) {
-        // Save data for watch page
         const animeData = {
             ...data,
             url: storage?.url || storage?.link,
@@ -136,11 +179,9 @@ document.addEventListener('DOMContentLoaded', () => {
             listEpisodes: data.episodes
         }));
 
-        // Navigate to watch page
         window.location.href = '/watch';
     }
 
-    // Show error state
     function showErrorState() {
         animeTitle.textContent = 'Error Loading Anime';
         animeImage.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))';
@@ -151,6 +192,5 @@ document.addEventListener('DOMContentLoaded', () => {
         episodesList.innerHTML = '<p>Episodes not available</p>';
     }
 
-    // Initialize the page
     loadAnimeData();
 });
