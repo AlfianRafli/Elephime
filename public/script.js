@@ -48,6 +48,10 @@
             if (targetBox === "historyBox") {
                 renderHistory();
             }
+            
+            if (targetBox === "bookmarkBox") {
+              renderBookmark();
+            }
         });
     });
 
@@ -348,6 +352,45 @@
 
         renderHistoryPagination(page, totalPages);
     }
+    
+    function renderBookmark(page = 1) {
+        const bookmark = JSON.parse(localStorage.getItem("bookmarks")) || [];
+        const bookmarkBox = document.getElementById("bookmarkBox");
+        const bookmarkList = document.getElementById("bookmarkList");
+
+        if (!bookmark.length) {
+            bookmarkList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-bookmark"></i>
+                    <p>you don't have any bookmarks</p>
+                </div>
+            `;
+            return;
+        }
+
+        bookmarkList.innerHTML = "";
+
+        const itemsPerPage = 10;
+        const totalPages = Math.ceil(bookmark.length / itemsPerPage);
+        const startIdx = (page - 1) * itemsPerPage;
+        const endIdx = startIdx + itemsPerPage;
+        const pageItems = bookmark.slice(startIdx, endIdx);
+
+        pageItems.forEach(anime => {
+            const card = createAnimeCard(
+                anime.title,
+                null,
+                anime.img,
+                null,
+                anime,
+                true,
+                true
+            );
+            bookmarkList.appendChild(card);
+        });
+
+        renderBookmarkPagination(page, totalPages);
+    }
 
     function renderHistoryPagination(currentPage, totalPages) {
         const pagination = document.getElementById("historyPagination");
@@ -380,6 +423,42 @@
             nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
             nextBtn.addEventListener("click", () =>
                 renderHistory(currentPage + 1)
+            );
+            pagination.appendChild(nextBtn);
+        }
+    }
+    
+    function renderBookmarkPagination(currentPage, totalPages) {
+        const pagination = document.getElementById("bookmarkPagination");
+        if (!pagination || totalPages <= 1) {
+            pagination.innerHTML = "";
+            return;
+        }
+
+        pagination.innerHTML = "";
+
+        // Previous button
+        if (currentPage > 1) {
+            const prevBtn = document.createElement("button");
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.addEventListener("click", () =>
+                renderBookmark(currentPage - 1)
+            );
+            pagination.appendChild(prevBtn);
+        }
+
+        // Current page indicator
+        const pageInfo = document.createElement("span");
+        pageInfo.className = "pagination-info";
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        pagination.appendChild(pageInfo);
+
+        // Next button
+        if (currentPage < totalPages) {
+            const nextBtn = document.createElement("button");
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.addEventListener("click", () =>
+                renderBookmark(currentPage + 1)
             );
             pagination.appendChild(nextBtn);
         }
