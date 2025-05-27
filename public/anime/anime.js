@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         
         if (index === -1) {
-            bookmarks.push({
+            bookmarks.unshift({
                 title: animeData.title,
                 img: animeData.img,
                 url: animeData.url || animeData.link,
