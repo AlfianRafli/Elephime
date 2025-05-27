@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeBookmarkButton(animeData) {
         const bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
         const isBookmarked = bookmarks.some(bookmark => 
-            bookmark.url === animeData.url || bookmark.link === animeData.link
+            bookmark.url === animeData.url
         );
         updateBookmarkButton(isBookmarked);
         
@@ -58,8 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleBookmark(animeData, bookmarks) {
-        const index = bookmarks.findIndex(bookmark => 
-            bookmark.url === animeData.url || bookmark.link === animeData.link
+        const index = bookmarks.findIndex(bookmark =>
+            bookmark.url === animeData.url
         );
         
         if (index === -1) {
@@ -69,13 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 url: animeData.url || animeData.link,
                 addedAt: new Date().toISOString()
             });
-            updateBookmarkButton(true);
         } else {
             bookmarks.splice(index, 1);
-            updateBookmarkButton(false);
         }
         
         localStorage.setItem('bookmarks', JSON.stringify(bookmarks.slice(0, 100)));
+        updateBookmarkButton(index === -1)
     }
 
     // === Load Anime Data ===
