@@ -166,7 +166,7 @@ const getDownloadLink = async (episodeUrl) => {
           });
         });
         
-        result.results[resolution.split(" ")[1]] = links;
+        result.results[resolution.split(" ")[1] ? resolution.split(" ")[1] : resolution] = links;
       }
     });
 
