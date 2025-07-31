@@ -1,6 +1,6 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
-const baseUrl = "https://otakudesu.cloud";
+const baseUrl = "https://otakudesu.best";
 
 // Configure axios for better performance
 const http = axios.create({
