@@ -3,6 +3,7 @@
     const animeListElem = document.getElementById("animeList");
     const historyList = document.getElementById("historyList");
     const darkModeToggle = document.getElementById("darkModeToggle");
+    const refreshButton = document.getElementById("refreshButton");
     const searchInput = document.getElementById("searchInput");
     const genreSelect = document.getElementById("genreSelect");
     const navButtons = document.querySelectorAll(".nav-btn");
@@ -24,12 +25,214 @@
             : '<i class="fas fa-moon"></i>';
     }
 
+    function replaceDomain() {
+        const results = {};
+        const oldDomain = ".cloud";
+        const newDomain = ".best";
+        const specificOldUrl = "https://otakudesu.cloud";
+        const specificNewUrl = "https://otakudesu.best";
+
+        try {
+            // Ambil semua key dari localStorage
+            const keys = Object.keys(localStorage);
+
+            if (keys.length === 0) {
+                console.warn("Tidak ada data di localStorage");
+                return {
+                    overallSuccess: false,
+                    message: "Tidak ada data di localStorage"
+                };
+            }
+
+            keys.forEach(key => {
+                try {
+                    const storedData = localStorage.getItem(key);
+
+                    if (!storedData) {
+                        results[key] = {
+                            success: false,
+                            message: "Data kosong"
+                        };
+                        return;
+                    }
+
+                    let data;
+                    let modified = false;
+
+                    // Coba parse sebagai JSON, jika gagal proses sebagai string biasa
+                    try {
+                        data = JSON.parse(storedData);
+                    } catch (e) {
+                        // Proses sebagai string biasa
+                        if (typeof storedData === "string") {
+                            let newData = storedData;
+
+                            // Ganti URL spesifik terlebih dahulu
+                            if (newData.includes(specificOldUrl)) {
+                                newData = newData.replaceAll(
+                                    specificOldUrl,
+                                    specificNewUrl
+                                );
+                                modified = true;
+                            }
+
+                            // Ganti semua kemunculan .cloud menjadi .best
+                            if (newData.includes(oldDomain)) {
+                                newData = newData.replaceAll(
+                                    oldDomain,
+                                    newDomain
+                                );
+                                modified = true;
+                            }
+
+                            if (modified) {
+                                localStorage.setItem(key, newData);
+                                results[key] = {
+                                    success: true,
+                                    type: "plain-string",
+                                    changes: "domain replaced"
+                                };
+                            } else {
+                                results[key] = {
+                                    success: false,
+                                    message:
+                                        "Tidak ada domain yang perlu diganti"
+                                };
+                            }
+                        } else {
+                            results[key] = {
+                                success: false,
+                                message: "Bukan data teks"
+                            };
+                        }
+                        return;
+                    }
+
+                    // Fungsi rekursif untuk mengganti domain dalam object
+                    function replaceInObject(obj) {
+                        for (let prop in obj) {
+                            if (obj.hasOwnProperty(prop)) {
+                                if (typeof obj[prop] === "string") {
+                                    // Ganti URL spesifik terlebih dahulu
+                                    if (obj[prop].includes(specificOldUrl)) {
+                                        obj[prop] = obj[prop].replaceAll(
+                                            specificOldUrl,
+                                            specificNewUrl
+                                        );
+                                        modified = true;
+                                    }
+
+                                    // Ganti semua .cloud menjadi .best
+                                    if (obj[prop].includes(oldDomain)) {
+                                        obj[prop] = obj[prop].replaceAll(
+                                            oldDomain,
+                                            newDomain
+                                        );
+                                        modified = true;
+                                    }
+                                } else if (
+                                    typeof obj[prop] === "object" &&
+                                    obj[prop] !== null
+                                ) {
+                                    replaceInObject(obj[prop]);
+                                }
+                            }
+                        }
+                    }
+
+                    // Proses data berdasarkan tipenya
+                    if (Array.isArray(data)) {
+                        data.forEach(item => {
+                            if (typeof item === "object" && item !== null) {
+                                replaceInObject(item);
+                            } else if (typeof item === "string") {
+                                let newItem = item;
+
+                                if (newItem.includes(specificOldUrl)) {
+                                    newItem = newItem.replaceAll(
+                                        specificOldUrl,
+                                        specificNewUrl
+                                    );
+                                    modified = true;
+                                }
+
+                                if (newItem.includes(oldDomain)) {
+                                    newItem = newItem.replaceAll(
+                                        oldDomain,
+                                        newDomain
+                                    );
+                                    modified = true;
+                                }
+
+                                if (newItem !== item) {
+                                    item = newItem;
+                                    modified = true;
+                                }
+                            }
+                        });
+                    } else if (typeof data === "object" && data !== null) {
+                        replaceInObject(data);
+                    } else if (typeof data === "string") {
+                        let newData = data;
+
+                        if (newData.includes(specificOldUrl)) {
+                            newData = newData.replaceAll(
+                                specificOldUrl,
+                                specificNewUrl
+                            );
+                            modified = true;
+                        }
+
+                        if (newData.includes(oldDomain)) {
+                            newData = newData.replaceAll(oldDomain, newDomain);
+                            modified = true;
+                        }
+
+                        if (modified) {
+                            data = newData;
+                        }
+                    }
+
+                    // Simpan kembali jika ada modifikasi
+                    if (modified) {
+                        localStorage.setItem(key, JSON.stringify(data));
+                        results[key] = {
+                            success: true,
+                            type: Array.isArray(data) ? "array" : typeof data,
+                            changes: "domain replaced"
+                        };
+                    } else {
+                        results[key] = {
+                            success: false,
+                            message: "Tidak ada domain yang perlu diganti"
+                        };
+                    }
+                } catch (error) {
+                    results[key] = {
+                        success: false,
+                        message: `Error: ${error.message}`
+                    };
+                }
+            });
+           
+            return { overallSuccess: true, details: results };
+        } catch (error) {
+            console.error("Terjadi kesalahan global:", error);
+            return { overallSuccess: false, error: error.message };
+        }
+    }
+
     darkModeToggle.addEventListener("click", () => {
         const isDark = document.body.classList.toggle("dark");
         localStorage.setItem("darkMode", isDark);
         darkModeToggle.innerHTML = isDark
             ? '<i class="fas fa-sun"></i>'
             : '<i class="fas fa-moon"></i>';
+    });
+
+    refreshButton.addEventListener("click", () => {
+      replaceDomain()
+      location.reload()
     });
 
     // === Navigation Tabs ===
@@ -48,9 +251,9 @@
             if (targetBox === "historyBox") {
                 renderHistory();
             }
-            
+
             if (targetBox === "bookmarkBox") {
-              renderBookmark();
+                renderBookmark();
             }
         });
     });
@@ -113,7 +316,11 @@
     }
 
     // === Render List Function ===
-    function renderAnimeList(animeArray, hideEpisode = false, hideReleased = false) {
+    function renderAnimeList(
+        animeArray,
+        hideEpisode = false,
+        hideReleased = false
+    ) {
         animeListElem.innerHTML = "";
 
         if (!animeArray || !animeArray.length) {
@@ -352,7 +559,7 @@
 
         renderHistoryPagination(page, totalPages);
     }
-    
+
     function renderBookmark(page = 1) {
         const bookmark = JSON.parse(localStorage.getItem("bookmarks")) || [];
         const bookmarkBox = document.getElementById("bookmarkBox");
@@ -427,7 +634,7 @@
             pagination.appendChild(nextBtn);
         }
     }
-    
+
     function renderBookmarkPagination(currentPage, totalPages) {
         const pagination = document.getElementById("bookmarkPagination");
         if (!pagination || totalPages <= 1) {
