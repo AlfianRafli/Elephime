@@ -1,127 +1,90 @@
 <!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-            name="description"
-            content="Watch anime on Elephime - Your ultimate anime streaming platform"
-        />
-        <link rel="icon" href="../assets/favico.png" type="image/png" />
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Watch anime on Elephime - Your ultimate anime streaming platform" />
+    <title>Elephime - Watch Anime</title>
 
-        <meta
-            property="og:image"
-            content="https://elephant.my.id/assets/favico.png"
-        />
-        <meta property="og:image:type" content="image/png" />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
-        <meta name="theme-color" content="#718096" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="icon" href="../assets/favico.png" type="image/png" />
+    <meta property="og:image" content="https://elephant.my.id/assets/favico.png" />
+    <meta name="theme-color" content="#718096" />
+    
+    <link rel="stylesheet" href="watch.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <i class="fas fa-shapes logo-icon"></i>
+                <span>Elephime</span>
+            </a>
+            <button class="dark-mode-toggle" id="theme-toggle-button" aria-label="Toggle Dark Mode" title="Toggle Dark Mode">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
 
-        <title>Elephime - Watch Anime</title>
-        <link rel="stylesheet" href="watch.css" />
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        />
-    </head>
-    <body>
-        <div id="loading-screen">
-            <div class="spinner" aria-label="Loading"></div>
-            <p class="loading-text">Loading anime...</p>
+    <main class="watch-container">
+        <h1 id="video-title" class="video-title">
+            <span id="title-text" class="skeleton skeleton-text"></span>
+        </h1>
+
+        <div class="video-wrapper skeleton" id="video-wrapper">
+            <div class="video-placeholder">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading video player...</p>
+            </div>
         </div>
 
-        <header class="main-header">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-shapes logo-icon"></i>
-                    <span>Elephime</span>
-                </a>
-                <button
-                    class="dark-mode-toggle"
-                    id="theme-toggle-button"
-                    aria-label="Toggle Dark Mode"
-                    title="Toggle Dark Mode"
-                >
-                    <i class="fas fa-moon"></i>
-                </button>
-            </div>
-        </header>
-
-        <main class="watch-container">
-            <h1 id="video-title" class="video-title">
-                <i class="fas fa-play-circle"></i>
-                <span id="title-text">Loading Anime...</span>
-            </h1>
-
-            <div class="video-wrapper" id="video-wrapper">
-                <div class="video-placeholder">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Loading video player...</p>
-                </div>
+        <div class="video-controls">
+            <div class="quality-controls">
+                <h3><i class="fas fa-tv"></i> Quality</h3>
+                <nav class="resolutions" id="resolution-buttons" aria-label="Video resolutions"></nav>
             </div>
 
-            <div class="video-controls">
-                <div class="quality-controls">
-                    <h3><i class="fas fa-tv"></i> Quality</h3>
-                    <nav
-                        class="resolutions"
-                        id="resolution-buttons"
-                        aria-label="Video resolutions"
-                    ></nav>
-                </div>
-
-                <div class="server-controls">
-                    <h3><i class="fas fa-server"></i> Server</h3>
-                    <nav
-                        class="servers"
-                        id="server-buttons"
-                        aria-label="Video servers"
-                    ></nav>
-                </div>
-
-                <div class="download-controls">
-                    <h3><i class="fas fa-download"></i> Downloads</h3>
-                    <div
-                        class="downloads"
-                        id="download-links"
-                        aria-label="Download links"
-                    ></div>
-                </div>
+            <div class="server-controls">
+                <h3><i class="fas fa-server"></i> Server</h3>
+                <nav class="servers" id="server-buttons" aria-label="Video servers"></nav>
             </div>
 
-            <div class="episode-navigation">
-                <button id="prev-episode" class="episode-nav-btn">
-                    <i class="fas fa-arrow-left"></i>
-                    Previous Episode
-                </button>
-                <a href="/anime" id="all-episodes" class="episode-nav-btn">
-                    <i class="fas fa-list"></i>
-                    All Episodes
-                </a>
-                <button id="next-episode" class="episode-nav-btn">
-                    Next Episode
-                    <i class="fas fa-arrow-right"></i>
-                </button>
+            <div class="download-controls">
+                <h3><i class="fas fa-download"></i> Downloads</h3>
+                <div class="downloads" id="download-links" aria-label="Download links"></div>
             </div>
-        </main>
+        </div>
 
-        <footer class="main-footer">
-            <div class="footer-content">
-                <p>&copy; 2025 Elephime</p>
-                <div class="social-links">
-                    <a
-                        href="https://github.com/AlfianRafli/Elephime"
-                        aria-label="GitHub"
-                        ><i class="fab fa-github"></i
-                    ></a>
-                    <a href="https://discord.gg/efhwMuuR9n" aria-label="Discord"
-                        ><i class="fa-brands fa-discord"></i
-                    ></a>
-                </div>
+        <div class="episode-navigation">
+            <button id="prev-episode" class="episode-nav-btn" disabled>
+                <i class="fas fa-arrow-left"></i>
+                <span>Previous Episode</span>
+            </button>
+            <a href="#" id="all-episodes-link" class="episode-nav-btn">
+                <i class="fas fa-list"></i>
+                <span>All Episodes</span>
+            </a>
+            <button id="next-episode" class="episode-nav-btn" disabled>
+                <span>Next Episode</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Elephime</p>
+            <div class="social-links">
+                <a href="https://github.com/AlfianRafli/Elephime" aria-label="GitHub" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                <a href="https://discord.gg/efhwMuuR9n" aria-label="Discord" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i></a>
             </div>
-        </footer>
+        </div>
+    </footer>
 
-        <script src="watch.js"></script>
-    </body>
+    <script src="watch.js" defer></script>
+</body>
 </html>

@@ -1,12 +1,30 @@
 const express = require("express");
 const path = require("path");
+const https = require("https");
+const config = require("./config.json");
 const otakudesu = require("./API/otakudesu");
+const fs = require("fs");
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 
+const domain = "elephant.my.id"; // this only for logs
 const app = express();
-const port = "5555";
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 2,
+  message: { error: "Too many requests, please try again later" }
+});
+
+
+app.use(cors({
+  origin: "http://elephant.my.id",
+}));
+
+app.use("/API", apiLimiter)
 
 app.get("/", (req, res) => {
   res.sendFile("./public/index.html");
@@ -76,4 +94,15 @@ app.use((req, res, next) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-app.listen(port, () => console.log("Start in port:", port));
+
+if (config.https) {
+	const options = {
+		key: fs.readFileSync(config.tls.key), // select ur key and cert
+		cert: fs.readFileSync(config.tls.cert)
+	};
+	https.createServer(config.tls, app).listen(443, () => {
+		console.log("Server running on https://" + domain);
+    });
+} else {
+	app.listen(config.port, () => console.log("Server running on http://" + domain + ":" + config.port));
+}

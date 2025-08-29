@@ -1,195 +1,175 @@
+// Menunggu DOM siap sebelum menjalankan script
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements
-    const loadingScreen = document.getElementById('loading-screen');
-    const body = document.body;
-    const toggleBtn = document.getElementById('theme-toggle-button');
-    const animeTitle = document.getElementById('title-text');
-    const animeImage = document.querySelector('.anime-image');
-    const metaGrid = document.querySelector('.meta-grid');
-    const ratingText = document.querySelector('.rating span');
-    const synopsisText = document.querySelector('.synopsis-text');
-    const episodesList = document.querySelector('.episodes-list');
-    const bookmarkButton = document.getElementById('bookmark-button');
-    
-    // Show loading screen
-    loadingScreen.style.display = 'flex';
+    // === DOM Elements ===
+    const elements = {
+        body: document.body,
+        toggleBtn: document.getElementById('theme-toggle-button'),
+        title: document.getElementById('title-text'),
+        image: document.querySelector('.anime-image'),
+        metaGrid: document.querySelector('.meta-grid'),
+        rating: document.getElementById('rating-text'),
+        synopsis: document.querySelector('.synopsis-text'),
+        episodesList: document.querySelector('.episodes-list'),
+        bookmarkButton: document.getElementById('bookmark-button'),
+    };
 
-    // === Dark Mode Setup ===
-    function initializeDarkMode() {
-        const storedDarkMode = localStorage.getItem('darkMode') === 'true';
-        document.body.classList.toggle('dark', storedDarkMode);
-        toggleBtn.innerHTML = storedDarkMode 
-            ? '<i class="fas fa-sun"></i>' 
-            : '<i class="fas fa-moon"></i>';
-    }
+    const SKELETON_CLASSES = '.skeleton, .skeleton-text';
 
-    toggleBtn.addEventListener('click', () => {
-        const isDark = document.body.classList.toggle('dark');
-        localStorage.setItem('darkMode', isDark);
-        toggleBtn.innerHTML = isDark 
-            ? '<i class="fas fa-sun"></i>' 
-            : '<i class="fas fa-moon"></i>';
-    });
-
-    // Initialize dark mode
-    initializeDarkMode();
-
-    // === Bookmark Functions ===
-    function initializeBookmarkButton(animeData) {
-        const bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
-        const isBookmarked = bookmarks.some(bookmark => 
-            bookmark.url === animeData.url
-        );
-        updateBookmarkButton(isBookmarked);
+    // === Skeleton UI Functions (BARU) ===
+    const showSkeleton = () => {
+        // Hapus konten sebelumnya dan tampilkan skeleton
+        elements.title.textContent = '';
+        elements.rating.textContent = '';
+        elements.synopsis.textContent = '';
         
-        bookmarkButton.addEventListener('click', () => {
-            toggleBookmark(animeData, bookmarks);
+        // Buat skeleton untuk grid meta dan episode
+        const createSkeletons = (count, className) => Array(count).fill().map(() => {
+            const el = document.createElement('div');
+            el.className = `${className} skeleton`;
+            return el;
         });
-    }
-
-    function updateBookmarkButton(isBookmarked) {
-        if (isBookmarked) {
-            bookmarkButton.innerHTML = '<i class="fas fa-bookmark"></i> <span>Bookmarked</span>';
-            bookmarkButton.classList.add('bookmarked');
-        } else {
-            bookmarkButton.innerHTML = '<i class="far fa-bookmark"></i> <span>Bookmark</span>';
-            bookmarkButton.classList.remove('bookmarked');
-        }
-    }
-
-    function toggleBookmark(animeData, bookmarks) {
-        const index = bookmarks.findIndex(bookmark =>
-            bookmark.url === animeData.url
-        );
         
-        if (index === -1) {
-            bookmarks.unshift({
-                title: animeData.title,
-                img: animeData.img,
-                url: animeData.url || animeData.link,
-                addedAt: new Date().toISOString()
-            });
-        } else {
-            bookmarks.splice(index, 1);
-        }
+        elements.metaGrid.replaceChildren(...createSkeletons(6, 'meta-item'));
+        elements.episodesList.replaceChildren(...createSkeletons(12, 'episode-link'));
         
-        localStorage.setItem('bookmarks', JSON.stringify(bookmarks.slice(0, 100)));
-        updateBookmarkButton(index === -1)
-    }
+        // Tambahkan kelas skeleton ke elemen utama
+        document.querySelectorAll('[id*="-text"], .anime-image, .bookmark-btn').forEach(el => el.classList.add('skeleton'));
+    };
+    
+    const hideSkeleton = () => {
+        document.querySelectorAll(SKELETON_CLASSES).forEach(el => el.classList.remove('skeleton', 'skeleton-text'));
+    };
 
-    // === Load Anime Data ===
-    async function loadAnimeData() {
-        try {
-            const storage = JSON.parse(localStorage.getItem('selectedAnime'));
-            const selectedUrl = storage?.link || storage?.url;
-            const watched = JSON.parse(localStorage.getItem('watched')) || [];
-
-            if (!selectedUrl) {
-                throw new Error('No anime selected');
-            }
-
-            const response = await fetch(`/API/anime?url=${encodeURIComponent(selectedUrl)}`);
-            if (!response.ok) throw new Error('Failed to fetch anime data');
-            
-            const data = await response.json();
-            if (!data?.title) throw new Error('Invalid anime data');
-
-            updateAnimeUI(data, storage, watched);
-        } catch (error) {
-            console.error('Error loading anime data:', error);
-            showErrorState();
-        } finally {
-            loadingScreen.style.display = 'none';
-        }
-    }
-
-    // Update Anime UI
-    function updateAnimeUI(data, storage, watched) {
-        animeTitle.textContent = data.title;
-
-        if (storage?.img) {
-            animeImage.style.backgroundImage = `url('${storage.img}')`;
-        }
-
-        ratingText.textContent = data.rating ? `${data.rating} / 10` : '-';
-
-        metaGrid.innerHTML = '';
+    // === Dark Mode ===
+    const setupDarkMode = () => {
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        elements.body.classList.toggle('dark', isDark);
+        elements.toggleBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        
+        elements.toggleBtn.addEventListener('click', () => {
+            const newIsDark = elements.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', newIsDark);
+            elements.toggleBtn.innerHTML = newIsDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+    };
+    
+    // === UI Rendering Functions (REFACTORED) ===
+    const renderMetaGrid = (data) => {
+        const fragment = document.createDocumentFragment();
         const metaItems = [
-            data.genres,
-            `Episodes: ${data.totalEpisode || '-'}`,
-            `Status: ${data.status || '-'}`,
-            `Released: ${data.released || '-'}`,
-            `Studio: ${data.studio || '-'}`,
-            `Producer: ${data.produser || '-'}`
-        ].flat().filter(Boolean);
+            ...(data.genres || []),
+            data.totalEpisode ? `Episodes: ${data.totalEpisode}` : null,
+            data.status ? `Status: ${data.status}` : null,
+            data.released ? `Released: ${data.released}` : null,
+            data.studio ? `Studio: ${data.studio}` : null,
+        ].filter(Boolean); // Hapus item yang null/undefined
 
         metaItems.forEach(text => {
             const item = document.createElement('div');
             item.className = 'meta-item';
             item.textContent = text;
-            metaGrid.appendChild(item);
+            fragment.appendChild(item);
         });
-
-        synopsisText.textContent = data.sinopsis || 'No synopsis available.';
-
-        episodesList.innerHTML = '';
-        if (data.episodes?.length) {
-            data.episodes.forEach((ep, index) => {
-                const epLink = document.createElement('a');
-                epLink.href = '#';
-                epLink.className = 'episode-link';
-                if (watched.includes(ep.url)) {
-                    epLink.classList.add('watched');
-                }
-                epLink.textContent = ep.episode || index + 1;
-                epLink.setAttribute('aria-label', `Episode ${ep.episode || index + 1}`);
-                
-                epLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    handleEpisodeClick(data, storage, ep, index);
-                });
-                
-                episodesList.appendChild(epLink);
-            });
-        } else {
-            episodesList.innerHTML = '<p>No episodes available</p>';
+        elements.metaGrid.replaceChildren(fragment);
+    };
+    
+    const renderEpisodes = (data, watched) => {
+        if (!data.episodes?.length) {
+            elements.episodesList.innerHTML = '<p>No episodes available</p>';
+            return;
         }
 
-        // Initialize bookmark button
-        const animeData = {
-            ...data,
-            url: storage?.url || storage?.link,
-            img: storage?.img
+        const fragment = document.createDocumentFragment();
+        data.episodes.forEach((ep, index) => {
+            const epLink = document.createElement('a');
+            epLink.href = '/watch'; // Arahkan ke halaman watch
+            epLink.className = 'episode-link';
+            if (watched.includes(ep.url)) epLink.classList.add('watched');
+            epLink.textContent = ep.episode || index + 1;
+            
+            epLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Simpan data untuk halaman selanjutnya dan redirect
+                localStorage.setItem('ClickedEpisode', ep.url);
+                localStorage.setItem('listEpisode', JSON.stringify({ current: index, listEpisodes: data.episodes }));
+                window.location.href = epLink.href;
+            });
+            fragment.appendChild(epLink);
+        });
+        elements.episodesList.replaceChildren(fragment);
+    };
+
+    // === Bookmark Logic ===
+    const setupBookmarkButton = (animeData) => {
+        const bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+        let isBookmarked = bookmarks.some(b => b.url === animeData.url);
+
+        const updateButtonState = () => {
+            if (isBookmarked) {
+                elements.bookmarkButton.innerHTML = '<i class="fas fa-bookmark"></i> <span>Bookmarked</span>';
+                elements.bookmarkButton.classList.add('bookmarked');
+            } else {
+                elements.bookmarkButton.innerHTML = '<i class="far fa-bookmark"></i> <span>Bookmark</span>';
+                elements.bookmarkButton.classList.remove('bookmarked');
+            }
         };
-        initializeBookmarkButton(animeData);
-    }
 
-    function handleEpisodeClick(data, storage, episode, index) {
-        const animeData = {
-            ...data,
-            url: storage?.url || storage?.link,
-            img: storage?.img
-        };
-        
-        localStorage.setItem('detail_anime', JSON.stringify(animeData));
-        localStorage.setItem('ClickedEpisode', episode.url);
-        localStorage.setItem('listEpisode', JSON.stringify({
-            current: index,
-            listEpisodes: data.episodes
-        }));
+        elements.bookmarkButton.addEventListener('click', () => {
+            const currentBookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+            const index = currentBookmarks.findIndex(b => b.url === animeData.url);
+            
+            if (index === -1) {
+                currentBookmarks.unshift({ title: animeData.title, img: animeData.img, url: animeData.url });
+            } else {
+                currentBookmarks.splice(index, 1);
+            }
+            localStorage.setItem('bookmarks', JSON.stringify(currentBookmarks.slice(0, 100)));
+            isBookmarked = !isBookmarked;
+            updateButtonState();
+        });
 
-        window.location.href = '/watch';
-    }
+        updateButtonState();
+    };
 
-    function showErrorState() {
-        animeTitle.textContent = 'Error Loading Anime';
-        animeImage.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))';
-        animeImage.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-        
-        metaGrid.innerHTML = '<div class="meta-item">Failed to load data</div>';
-        synopsisText.textContent = 'We encountered an error while loading this anime. Please try again later.';
-        episodesList.innerHTML = '<p>Episodes not available</p>';
-    }
+    // === Main Data Loading Function ===
+    const loadAnimeData = async () => {
+        showSkeleton();
+        try {
+            const storage = JSON.parse(localStorage.getItem('selectedAnime'));
+            const selectedUrl = storage?.link || storage?.url;
+            if (!selectedUrl) throw new Error('No anime selected');
 
+            const [animeResponse, watchedResponse] = await Promise.all([
+                fetch(`/API/anime?url=${encodeURIComponent(selectedUrl)}`),
+                Promise.resolve(JSON.parse(localStorage.getItem('watched')) || [])
+            ]);
+
+            if (!animeResponse.ok) throw new Error('Failed to fetch anime data');
+            const data = await animeResponse.json();
+            if (!data?.title) throw new Error('Invalid anime data');
+            
+            // Simpan data lengkap untuk halaman watch
+            localStorage.setItem('detail_anime', JSON.stringify({ ...data, img: storage?.img, url: selectedUrl }));
+            
+            // Populate UI
+            elements.title.textContent = data.title;
+            elements.image.style.backgroundImage = `url('${storage.img}')`;
+            elements.rating.textContent = data.rating ? `${data.rating} / 10` : 'N/A';
+            elements.synopsis.textContent = data.sinopsis || 'No synopsis available.';
+            
+            renderMetaGrid(data);
+            renderEpisodes(data, watchedResponse);
+            setupBookmarkButton({ title: data.title, img: storage.img, url: selectedUrl });
+
+        } catch (error) {
+            console.error('Error loading anime data:', error);
+            // Tampilkan pesan error di UI
+        } finally {
+            hideSkeleton();
+        }
+    };
+    
+    // === Initialize App ===
+    setupDarkMode();
     loadAnimeData();
 });

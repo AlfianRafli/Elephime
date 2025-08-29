@@ -1,275 +1,251 @@
-(async () => {
-    // DOM Elements
-    const loadingScreen = document.getElementById("loading-screen");
-    const body = document.body;
-    const toggleBtn = document.getElementById("theme-toggle-button");
-    const videoTitle = document.getElementById("title-text");
-    const videoWrapper = document.getElementById("video-wrapper");
-    const resButtons = document.getElementById("resolution-buttons");
-    const serverButtons = document.getElementById("server-buttons");
-    const dlLinks = document.getElementById("download-links");
-    const prevBtn = document.getElementById("prev-episode");
-    const nextBtn = document.getElementById("next-episode");
+document.addEventListener('DOMContentLoaded', () => {
+    // === STATE & CONSTANTS ===
+    const state = {
+        animeDetails: null,
+        episodeList: null,
+        currentEpisodeIndex: -1,
+        watchedEpisodes: [],
+        videoServers: {},
+        downloadLinks: {},
+        selectedResolution: '',
+        selectedServerIndex: 0,
+    };
 
-    // Show loading screen
-    loadingScreen.style.display = "flex";
+    const elements = {
+        body: document.body,
+        toggleBtn: document.getElementById('theme-toggle-button'),
+        title: document.getElementById('title-text'),
+        videoWrapper: document.getElementById('video-wrapper'),
+        resButtons: document.getElementById('resolution-buttons'),
+        serverButtons: document.getElementById('server-buttons'),
+        dlLinks: document.getElementById('download-links'),
+        prevBtn: document.getElementById('prev-episode'),
+        nextBtn: document.getElementById('next-episode'),
+        allEpisodesLink: document.getElementById('all-episodes-link'),
+    };
 
-    // === Dark Mode Setup ===
-    function initializeDarkMode() {
-        const storedDarkMode = localStorage.getItem("darkMode") === "true";
-        document.body.classList.toggle("dark", storedDarkMode);
-        toggleBtn.innerHTML = storedDarkMode 
-            ? '<i class="fas fa-sun"></i>' 
-            : '<i class="fas fa-moon"></i>';
-    }
-
-    toggleBtn.addEventListener("click", () => {
-        const isDark = document.body.classList.toggle("dark");
-        localStorage.setItem("darkMode", isDark);
-        toggleBtn.innerHTML = isDark 
-            ? '<i class="fas fa-sun"></i>' 
-            : '<i class="fas fa-moon"></i>';
-    });
-
-    // Initialize dark mode
-    initializeDarkMode();
-
-    // === Video Player Functions ===
-    async function loadVideoData() {
-        try {
-            const url = localStorage.getItem("ClickedEpisode");
-            const eps = JSON.parse(localStorage.getItem("listEpisode"));
-            const detail = JSON.parse(localStorage.getItem("detail_anime"));
-            
-            if (!url || !eps) {
-                throw new Error("Episode data not found");
+    // === SKELETON UI ===
+    const showSkeleton = () => {
+        elements.title.classList.add('skeleton', 'skeleton-text');
+        elements.videoWrapper.classList.add('skeleton');
+        elements.videoWrapper.innerHTML = `<div class="video-placeholder"><i class="fas fa-spinner fa-spin"></i><p>Loading video...</p></div>`;
+        
+        const createSkeletonPlaceholders = (container, count) => {
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const skeletonBtn = document.createElement('div');
+                skeletonBtn.className = 'skeleton-button skeleton';
+                container.appendChild(skeletonBtn);
             }
+        };
+        createSkeletonPlaceholders(elements.resButtons, 3);
+        createSkeletonPlaceholders(elements.serverButtons, 4);
+        createSkeletonPlaceholders(elements.dlLinks, 2);
+    };
 
-            // Set episode title
-            const currentEp = eps.listEpisodes[eps.current];
-            videoTitle.textContent = `${currentEp.episode} - ${detail.title || "Untitled"}`;
+    const hideSkeleton = () => {
+        elements.title.classList.remove('skeleton', 'skeleton-text');
+        elements.videoWrapper.classList.remove('skeleton');
+        document.querySelectorAll('.skeleton-button').forEach(el => el.remove());
+    };
 
-            // Fetch video data
-            const res = await fetch("/API/getData", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ url: url })
-            });
-            
-            if (!res.ok) throw new Error("Failed to fetch video data");
-            
-            const response = await res.json();
-            const videoServers = response.servers;
-            const downloadLinks = response.results;
+    // === UI RENDERING ===
+    const renderControlButtons = () => {
+        document.querySelectorAll('.skeleton-button').forEach(el => el.remove());
 
-            // Initialize video player
-            let selectedResolution = Object.keys(videoServers)[0];
-            let selectedServerIndex = 0;
-
-            // Create button helper
-            function createButton(label, onClick, active = false) {
-                const btn = document.createElement("button");
-                btn.textContent = label;
-                btn.addEventListener("click", onClick);
-                if (active) btn.classList.add("active");
-                return btn;
-            }
-
-            // Switch video function
-            async function switchVideo(res, index) {
-                try {
-                    loadingScreen.style.display = "flex";
-                    const server = videoServers[res][index];
-                    
-                    // Fetch video iframe
-                    const fetchRes = await fetch("/API/videos", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({ dataContent: server.dataContent })
-                    });
-
-                    const videos = await fetchRes.json();
-
-                    if (!videos.iframe) {
-                        throw new Error("Empty iframe from API");
-                    }
-
-                    // Update video player
-                    videoWrapper.innerHTML = videos.iframe;
-                    selectedResolution = res;
-                    selectedServerIndex = index;
-                    
-                    // Update UI
-                    renderServerButtons();
-                    renderDownloadLinks();
-                    updateActiveButtons();
-                } catch (e) {
-                    console.error("Failed to switch video:", e);
-                    videoWrapper.innerHTML = `
-                        <div class="video-placeholder">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <p>Failed to load video. Please try another server.</p>
-                        </div>
-                    `;
-                } finally {
-                    loadingScreen.style.display = "none";
-                }
-            }
-
-            // Render resolution buttons
-            function renderResolutionButtons() {
-                resButtons.innerHTML = "";
-                Object.keys(videoServers).forEach(res => {
-                    const btn = createButton(
-                        `${res}`, 
-                        () => switchVideo(res, 0),
-                        res === selectedResolution
-                    );
-                    btn.dataset.res = res;
-                    resButtons.appendChild(btn);
-                });
-            }
-
-            // Render server buttons
-            function renderServerButtons() {
-                serverButtons.innerHTML = "";
-                videoServers[selectedResolution].forEach((server, idx) => {
-                    const btn = createButton(
-                        server.label,
-                        () => switchVideo(selectedResolution, idx),
-                        idx === selectedServerIndex
-                    );
-                    btn.dataset.idx = idx;
-                    serverButtons.appendChild(btn);
-                });
-            }
-
-            // Render download links
-            function renderDownloadLinks() {
-                dlLinks.innerHTML = "";
-                (downloadLinks[selectedResolution] || []).forEach(link => {
-                    const a = document.createElement("a");
-                    a.href = link.link;
-                    a.innerHTML = `<i class="fas fa-download"></i> ${link.source}`;
-                    a.className = "download-link";
-                    a.target = "_blank";
-                    a.rel = "noopener noreferrer";
-                    dlLinks.appendChild(a);
-                });
-            }
-
-            // Update active buttons
-            function updateActiveButtons() {
-                resButtons.querySelectorAll("button").forEach(btn => {
-                    btn.classList.toggle(
-                        "active",
-                        btn.dataset.res === selectedResolution
-                    );
-                });
-                serverButtons.querySelectorAll("button").forEach(btn => {
-                    btn.classList.toggle(
-                        "active",
-                        parseInt(btn.dataset.idx) === selectedServerIndex
-                    );
-                });
-            }
-
-            // Episode navigation
-            prevBtn.addEventListener("click", () => {
-                if (eps.current === 0) return;
-                
-                const prevEpisode = eps.listEpisodes[eps.current - 1];
-                localStorage.setItem(
-                    "listEpisode",
-                    JSON.stringify({
-                        current: eps.current - 1,
-                        listEpisodes: eps.listEpisodes
-                    })
-                );
-                localStorage.setItem("ClickedEpisode", prevEpisode.url);
-                location.reload();
-            });
-
-            nextBtn.addEventListener("click", () => {
-                if (eps.current >= eps.listEpisodes.length - 1) return;
-                
-                const nextEpisode = eps.listEpisodes[eps.current + 1];
-                localStorage.setItem(
-                    "listEpisode",
-                    JSON.stringify({
-                        current: eps.current + 1,
-                        listEpisodes: eps.listEpisodes
-                    })
-                );
-                localStorage.setItem("ClickedEpisode", nextEpisode.url);
-                location.reload();
-            });
-
-            // Disable buttons if needed
-            prevBtn.disabled = eps.current === 0;
-            nextBtn.disabled = eps.current >= eps.listEpisodes.length - 1;
-
-            // Initialize UI
-            renderResolutionButtons();
-            await switchVideo(selectedResolution, 0);
-
-            // Update history
-            updateWatchHistory();
-        } catch (error) {
-            console.error("Failed to load video data:", error);
-            videoWrapper.innerHTML = `
-                <div class="video-placeholder">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>Failed to load episode data. Please try again.</p>
-                </div>
-            `;
-        } finally {
-            loadingScreen.style.display = "none";
-        }
-    }
-
-    // Update watch history
-    function updateWatchHistory() {
-        const storage = JSON.parse(localStorage.getItem("detail_anime"));
-        const ep = JSON.parse(localStorage.getItem("listEpisode"));
-        const history = JSON.parse(localStorage.getItem("history")) || [];
-        const watched = JSON.parse(localStorage.getItem("watched")) || [];
-
-        if (!storage || !ep) return;
-
-        const dataToSet = {
-            url: storage.url,
-            title: storage.title,
-            img: storage.img,
-            episode: ep.listEpisodes[ep.current].episode
+        const createButton = (text, onClick, isActive) => {
+            const btn = document.createElement('button');
+            btn.textContent = text;
+            if (isActive) btn.classList.add('active'); // Set kelas active di sini
+            btn.addEventListener('click', onClick);
+            return btn;
         };
 
-        // Check if already in history
-        const existingIndex = history.findIndex(item => 
-            item.url === dataToSet.url && 
-            item.episode === dataToSet.episode
-        );
-
-        // Update history
-        if (existingIndex >= 0) {
-            history.splice(existingIndex, 1);
+        // Render Resolution Buttons
+        const resFragment = document.createDocumentFragment();
+        const resolutions = Object.keys(state.videoServers);
+        if (resolutions.length > 0) {
+            resolutions.forEach(res => {
+                const btn = createButton(res, () => switchVideo(res, 0), res === state.selectedResolution);
+                resFragment.appendChild(btn);
+            });
+            elements.resButtons.replaceChildren(resFragment);
+        } else {
+            elements.resButtons.innerHTML = '<span>No qualities available.</span>';
         }
+
+        // Render Server Buttons
+        const serverFragment = document.createDocumentFragment();
+        const currentServers = state.videoServers[state.selectedResolution];
+        if (currentServers && currentServers.length > 0) {
+            currentServers.forEach((server, idx) => {
+                const btn = createButton(server.label, () => switchVideo(state.selectedResolution, idx), idx === state.selectedServerIndex);
+                serverFragment.appendChild(btn);
+            });
+            elements.serverButtons.replaceChildren(serverFragment);
+        } else {
+            elements.serverButtons.innerHTML = '<span>No servers available.</span>';
+        }
+
+        // Render Download Links
+        const dlFragment = document.createDocumentFragment();
+        const currentDownloads = state.downloadLinks[state.selectedResolution];
+        if (currentDownloads && currentDownloads.length > 0) {
+            currentDownloads.forEach(link => {
+                const a = document.createElement('a');
+                a.href = link.link;
+                a.className = 'download-link';
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.innerHTML = `<i class="fas fa-download"></i> ${link.source}`;
+                dlFragment.appendChild(a);
+            });
+            elements.dlLinks.replaceChildren(dlFragment);
+        } else {
+            elements.dlLinks.innerHTML = '<span>No download links.</span>';
+        }
+    };
+
+    const updateNavButtonsState = () => {
+        elements.prevBtn.disabled = state.currentEpisodeIndex <= 0;
+        elements.nextBtn.disabled = state.currentEpisodeIndex >= state.episodeList.length - 1;
+    };
+
+    // === CORE LOGIC ===
+    const switchVideo = async (resolution, serverIndex) => {
+        // **KUNCI PERBAIKAN ADA DI SINI**
+        // Jika resolusi berubah, reset server index ke 0
+        if (state.selectedResolution !== resolution) {
+            state.selectedServerIndex = 0;
+        } else {
+            state.selectedServerIndex = serverIndex;
+        }
+        state.selectedResolution = resolution;
+
+        // Tampilkan loading HANYA di video player
+        elements.videoWrapper.innerHTML = `<div class="video-placeholder"><i class="fas fa-spinner fa-spin"></i><p>Switching server...</p></div>`;
+        // LANGSUNG RENDER ULANG TOMBOL agar status .active diperbarui SEKARANG
+        renderControlButtons();
+
+        try {
+            const server = state.videoServers[resolution][state.selectedServerIndex];
+            if (!server) throw new Error("Server not found");
+            
+            const response = await fetch("/API/videos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ dataContent: server.dataContent })
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch iframe");
+            const video = await response.json();
+            if (!video.iframe) throw new Error("Empty iframe from API");
+
+            elements.videoWrapper.innerHTML = video.iframe;
+        } catch (error) {
+            console.error("Failed to switch video:", error);
+            elements.videoWrapper.innerHTML = `<div class="video-placeholder"><i class="fas fa-exclamation-triangle"></i><p>Failed to load video. Try another server.</p></div>`;
+        }
+    };
+
+    const loadEpisode = async (episodeIndex) => {
+        showSkeleton();
+        state.currentEpisodeIndex = episodeIndex;
+        const currentEpisode = state.episodeList[episodeIndex];
+        
+        try {
+            const response = await fetch("/API/getData", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: currentEpisode.url })
+            });
+            if (!response.ok) throw new Error("Failed to fetch episode data");
+
+            const data = await response.json();
+            state.videoServers = data.servers || {};
+            state.downloadLinks = data.results || {};
+            
+            elements.title.textContent = `${currentEpisode.episode} - ${state.animeDetails.title}`;
+            document.title = `${currentEpisode.episode} - ${state.animeDetails.title} | Elephime`;
+
+            hideSkeleton();
+            updateNavButtonsState();
+            
+            const firstResolution = Object.keys(state.videoServers)[0] || '';
+            // Panggil switchVideo yang sudah diperbaiki
+            await switchVideo(firstResolution, 0); 
+            updateWatchHistory(currentEpisode);
+            
+        } catch (error) {
+            console.error("Error loading episode:", error);
+            elements.videoWrapper.innerHTML = `<div class="video-placeholder"><i class="fas fa-exclamation-triangle"></i><p>Failed to load episode data.</p></div>`;
+            hideSkeleton();
+            renderControlButtons();
+        }
+    };
+
+    // === HISTORY & NAVIGATION ===
+    const updateWatchHistory = (currentEpisode) => {
+        const history = JSON.parse(localStorage.getItem("history")) || [];
+        const dataToSet = {
+            url: state.animeDetails.url,
+            title: state.animeDetails.title,
+            img: state.animeDetails.img,
+            episode: currentEpisode.episode
+        };
+
+        const existingIndex = history.findIndex(item => item.url === dataToSet.url);
+        if (existingIndex !== -1) history.splice(existingIndex, 1);
         history.unshift(dataToSet);
+        localStorage.setItem("history", JSON.stringify(history.slice(0, 50)));
 
-        // Update watched episodes
-        if (!watched.includes(ep.listEpisodes[ep.current].url)) {
-            watched.push(ep.listEpisodes[ep.current].url);
+        if (!state.watchedEpisodes.includes(currentEpisode.url)) {
+            state.watchedEpisodes.push(currentEpisode.url);
+            localStorage.setItem("watched", JSON.stringify(state.watchedEpisodes));
+        }
+    };
+
+    const navigateEpisode = (direction) => {
+        const newIndex = state.currentEpisodeIndex + direction;
+        if (newIndex >= 0 && newIndex < state.episodeList.length) {
+            loadEpisode(newIndex);
+        }
+    };
+
+    // === INITIALIZATION ===
+    const initializeApp = () => {
+        // Setup Dark Mode
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        elements.body.classList.toggle('dark', isDark);
+        elements.toggleBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        elements.toggleBtn.addEventListener('click', () => {
+            const newIsDark = elements.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', newIsDark);
+            elements.toggleBtn.innerHTML = newIsDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        // Load data from localStorage
+        state.animeDetails = JSON.parse(localStorage.getItem("detail_anime"));
+        const episodeData = JSON.parse(localStorage.getItem("listEpisode"));
+        state.watchedEpisodes = JSON.parse(localStorage.getItem("watched")) || [];
+        
+        if (!state.animeDetails || !episodeData || !episodeData.listEpisodes || episodeData.listEpisodes.length === 0) {
+            elements.videoWrapper.innerHTML = `<div class="video-placeholder"><i class="fas fa-exclamation-triangle"></i><p>Anime data not found. Please select an episode first.</p></div>`;
+            hideSkeleton();
+            return;
         }
 
-        // Save to localStorage (limit history to 50 items)
-        localStorage.setItem("history", JSON.stringify(history.slice(0, 50)));
-        localStorage.setItem("watched", JSON.stringify(watched));
-    }
+        state.episodeList = episodeData.listEpisodes;
+        state.currentEpisodeIndex = episodeData.current;
+        elements.allEpisodesLink.href = `/anime`;
+        
+        // Setup Event Listeners
+        elements.prevBtn.addEventListener('click', () => navigateEpisode(-1));
+        elements.nextBtn.addEventListener('click', () => navigateEpisode(1));
 
-    // Initialize the page
-    loadVideoData();
-})();
+        // Initial Load
+        loadEpisode(state.currentEpisodeIndex);
+    };
+
+    initializeApp();
+});
