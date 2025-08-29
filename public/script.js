@@ -1,687 +1,275 @@
-(async () => {
-    // DOM Elements
+// Menggunakan 'strict mode' untuk kode yang lebih aman
+"use strict";
+
+// Dibungkus dalam event listener untuk memastikan DOM siap
+document.addEventListener("DOMContentLoaded", () => {
+    // === DOM Elements ===
     const animeListElem = document.getElementById("animeList");
-    const historyList = document.getElementById("historyList");
+    const historyListElem = document.getElementById("historyList");
+    const bookmarkListElem = document.getElementById("bookmarkList");
     const darkModeToggle = document.getElementById("darkModeToggle");
     const refreshButton = document.getElementById("refreshButton");
     const searchInput = document.getElementById("searchInput");
     const genreSelect = document.getElementById("genreSelect");
-    const navButtons = document.querySelectorAll(".nav-btn");
+    const navLinks = document.querySelectorAll(".nav-link");
     const animeBoxes = document.querySelectorAll(".anime-box");
     const loader = document.getElementById("loading-screen");
 
-    // State variables
+    // === State variables ===
     let currentPage = 1;
     let totalPages = 1;
     let currentGenre = "";
     let currentSearchQuery = "";
+    let debounceTimeout;
+
+    // === Constants ===
+    const LOCAL_STORAGE_KEYS = {
+        DARK_MODE: "darkMode",
+        HISTORY: "history",
+        BOOKMARKS: "bookmarks",
+        SELECTED_ANIME: "selectedAnime"
+    };
+    const ITEMS_PER_PAGE = 12; // Untuk history & bookmark
+
+    // === Utility Functions ===
+    const showLoader = () => loader.classList.remove("hidden");
+    const hideLoader = () => loader.classList.add("hidden");
+    const getFromLocalStorage = (key, defaultValue = []) => JSON.parse(localStorage.getItem(key)) || defaultValue;
 
     // === Dark Mode Setup ===
-    function initializeDarkMode() {
-        const storedDarkMode = localStorage.getItem("darkMode") === "true";
-        document.body.classList.toggle("dark", storedDarkMode);
-        darkModeToggle.innerHTML = storedDarkMode
-            ? '<i class="fas fa-sun"></i>'
-            : '<i class="fas fa-moon"></i>';
-    }
+    const initializeDarkMode = () => {
+        const isDark = getFromLocalStorage(LOCAL_STORAGE_KEYS.DARK_MODE, false) === true;
+        document.body.classList.toggle("dark", isDark);
+        darkModeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    };
 
-    function replaceDomain() {
-        const results = {};
-        const oldDomain = ".cloud";
-        const newDomain = ".best";
-        const specificOldUrl = "https://otakudesu.cloud";
-        const specificNewUrl = "https://otakudesu.best";
-
-        try {
-            // Ambil semua key dari localStorage
-            const keys = Object.keys(localStorage);
-
-            if (keys.length === 0) {
-                console.warn("Tidak ada data di localStorage");
-                return {
-                    overallSuccess: false,
-                    message: "Tidak ada data di localStorage"
-                };
-            }
-
-            keys.forEach(key => {
-                try {
-                    const storedData = localStorage.getItem(key);
-
-                    if (!storedData) {
-                        results[key] = {
-                            success: false,
-                            message: "Data kosong"
-                        };
-                        return;
-                    }
-
-                    let data;
-                    let modified = false;
-
-                    // Coba parse sebagai JSON, jika gagal proses sebagai string biasa
-                    try {
-                        data = JSON.parse(storedData);
-                    } catch (e) {
-                        // Proses sebagai string biasa
-                        if (typeof storedData === "string") {
-                            let newData = storedData;
-
-                            // Ganti URL spesifik terlebih dahulu
-                            if (newData.includes(specificOldUrl)) {
-                                newData = newData.replaceAll(
-                                    specificOldUrl,
-                                    specificNewUrl
-                                );
-                                modified = true;
-                            }
-
-                            // Ganti semua kemunculan .cloud menjadi .best
-                            if (newData.includes(oldDomain)) {
-                                newData = newData.replaceAll(
-                                    oldDomain,
-                                    newDomain
-                                );
-                                modified = true;
-                            }
-
-                            if (modified) {
-                                localStorage.setItem(key, newData);
-                                results[key] = {
-                                    success: true,
-                                    type: "plain-string",
-                                    changes: "domain replaced"
-                                };
-                            } else {
-                                results[key] = {
-                                    success: false,
-                                    message:
-                                        "Tidak ada domain yang perlu diganti"
-                                };
-                            }
-                        } else {
-                            results[key] = {
-                                success: false,
-                                message: "Bukan data teks"
-                            };
-                        }
-                        return;
-                    }
-
-                    // Fungsi rekursif untuk mengganti domain dalam object
-                    function replaceInObject(obj) {
-                        for (let prop in obj) {
-                            if (obj.hasOwnProperty(prop)) {
-                                if (typeof obj[prop] === "string") {
-                                    // Ganti URL spesifik terlebih dahulu
-                                    if (obj[prop].includes(specificOldUrl)) {
-                                        obj[prop] = obj[prop].replaceAll(
-                                            specificOldUrl,
-                                            specificNewUrl
-                                        );
-                                        modified = true;
-                                    }
-
-                                    // Ganti semua .cloud menjadi .best
-                                    if (obj[prop].includes(oldDomain)) {
-                                        obj[prop] = obj[prop].replaceAll(
-                                            oldDomain,
-                                            newDomain
-                                        );
-                                        modified = true;
-                                    }
-                                } else if (
-                                    typeof obj[prop] === "object" &&
-                                    obj[prop] !== null
-                                ) {
-                                    replaceInObject(obj[prop]);
-                                }
-                            }
-                        }
-                    }
-
-                    // Proses data berdasarkan tipenya
-                    if (Array.isArray(data)) {
-                        data.forEach(item => {
-                            if (typeof item === "object" && item !== null) {
-                                replaceInObject(item);
-                            } else if (typeof item === "string") {
-                                let newItem = item;
-
-                                if (newItem.includes(specificOldUrl)) {
-                                    newItem = newItem.replaceAll(
-                                        specificOldUrl,
-                                        specificNewUrl
-                                    );
-                                    modified = true;
-                                }
-
-                                if (newItem.includes(oldDomain)) {
-                                    newItem = newItem.replaceAll(
-                                        oldDomain,
-                                        newDomain
-                                    );
-                                    modified = true;
-                                }
-
-                                if (newItem !== item) {
-                                    item = newItem;
-                                    modified = true;
-                                }
-                            }
-                        });
-                    } else if (typeof data === "object" && data !== null) {
-                        replaceInObject(data);
-                    } else if (typeof data === "string") {
-                        let newData = data;
-
-                        if (newData.includes(specificOldUrl)) {
-                            newData = newData.replaceAll(
-                                specificOldUrl,
-                                specificNewUrl
-                            );
-                            modified = true;
-                        }
-
-                        if (newData.includes(oldDomain)) {
-                            newData = newData.replaceAll(oldDomain, newDomain);
-                            modified = true;
-                        }
-
-                        if (modified) {
-                            data = newData;
-                        }
-                    }
-
-                    // Simpan kembali jika ada modifikasi
-                    if (modified) {
-                        localStorage.setItem(key, JSON.stringify(data));
-                        results[key] = {
-                            success: true,
-                            type: Array.isArray(data) ? "array" : typeof data,
-                            changes: "domain replaced"
-                        };
-                    } else {
-                        results[key] = {
-                            success: false,
-                            message: "Tidak ada domain yang perlu diganti"
-                        };
-                    }
-                } catch (error) {
-                    results[key] = {
-                        success: false,
-                        message: `Error: ${error.message}`
-                    };
-                }
-            });
-           
-            return { overallSuccess: true, details: results };
-        } catch (error) {
-            console.error("Terjadi kesalahan global:", error);
-            return { overallSuccess: false, error: error.message };
-        }
-    }
-
-    darkModeToggle.addEventListener("click", () => {
+    const toggleDarkMode = () => {
         const isDark = document.body.classList.toggle("dark");
-        localStorage.setItem("darkMode", isDark);
-        darkModeToggle.innerHTML = isDark
-            ? '<i class="fas fa-sun"></i>'
-            : '<i class="fas fa-moon"></i>';
-    });
-
-    refreshButton.addEventListener("click", () => {
-      replaceDomain()
-      location.reload()
-    });
-
+        localStorage.setItem(LOCAL_STORAGE_KEYS.DARK_MODE, isDark);
+        darkModeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    };
+    
     // === Navigation Tabs ===
-    navButtons.forEach(button => {
-        button.addEventListener("click", () => {
-            // Update active state
-            navButtons.forEach(btn => btn.classList.remove("active"));
-            button.classList.add("active");
+    const handleNavClick = (e) => {
+        e.preventDefault();
+        const clickedLink = e.currentTarget;
 
-            // Show corresponding box
-            const targetBox = button.dataset.section;
-            animeBoxes.forEach(box => box.classList.remove("active"));
-            document.getElementById(targetBox).classList.add("active");
+        navLinks.forEach(link => link.classList.remove("active"));
+        clickedLink.classList.add("active");
 
-            // If history tab is clicked, refresh history
-            if (targetBox === "historyBox") {
-                renderHistory();
-            }
+        const targetBoxId = clickedLink.dataset.section;
+        animeBoxes.forEach(box => box.classList.remove("active"));
+        document.getElementById(targetBoxId).classList.add("active");
 
-            if (targetBox === "bookmarkBox") {
-                renderBookmark();
-            }
-        });
-    });
+        switch (targetBoxId) {
+            case "historyBox":
+                renderStoredItems("history");
+                break;
+            case "bookmarkBox":
+                renderStoredItems("bookmarks");
+                break;
+        }
+    };
 
     // === Card Creator Function ===
-    function createAnimeCard(
-        title,
-        episode,
-        imageUrl,
-        released,
-        data,
-        hideEpisode = false,
-        hideReleased = false
-    ) {
+    const createAnimeCard = (animeData) => {
+        const { title, episode, img, released } = animeData;
         const card = document.createElement("div");
         card.className = "anime-card";
 
         const imgWrapper = document.createElement("div");
         imgWrapper.className = "anime-image-wrapper";
 
-        const img = document.createElement("img");
-        img.className = "anime-image";
-        img.alt = `${title} cover image`;
-        img.src = imageUrl;
-        img.loading = "lazy";
+        const image = document.createElement("img");
+        image.className = "anime-image";
+        image.alt = title;
+        image.src = img || 'assets/placeholder.png'; // Fallback image
+        image.loading = "lazy";
+        image.addEventListener('error', () => { image.src = 'assets/placeholder.png'; }); // Handle broken images
 
-        const info = document.createElement("div");
-        info.className = "anime-info";
+        const titleOverlay = document.createElement("div");
+        titleOverlay.className = "anime-title-overlay";
 
         const animeTitle = document.createElement("h3");
         animeTitle.className = "anime-title";
         animeTitle.textContent = title;
-        info.appendChild(animeTitle);
+        titleOverlay.appendChild(animeTitle);
+        
+        const info = document.createElement("div");
+        info.className = "anime-info";
 
-        // Add released information
-        if (!hideReleased) {
+        if (released) {
             const animeReleased = document.createElement("p");
             animeReleased.className = "anime-released";
-            animeReleased.textContent = `Released: ${released || "Unknown"}`;
+            animeReleased.textContent = `Released: ${released}`;
             info.appendChild(animeReleased);
         }
 
-        if (!hideEpisode) {
+        if (episode) {
             const animeEpisode = document.createElement("p");
             animeEpisode.className = "anime-episode";
             animeEpisode.textContent = `Episode ${episode}`;
             info.appendChild(animeEpisode);
         }
-
-        imgWrapper.appendChild(img);
-        card.appendChild(imgWrapper);
-        card.appendChild(info);
-
+        
+        imgWrapper.append(image, titleOverlay);
+        card.append(imgWrapper, info);
+        
         card.addEventListener("click", () => {
-            localStorage.setItem("selectedAnime", JSON.stringify(data));
+            localStorage.setItem(LOCAL_STORAGE_KEYS.SELECTED_ANIME, JSON.stringify(animeData));
             window.location.href = "/anime";
         });
 
         return card;
-    }
+    };
 
-    // === Render List Function ===
-    function renderAnimeList(
-        animeArray,
-        hideEpisode = false,
-        hideReleased = false
-    ) {
-        animeListElem.innerHTML = "";
+    // === Generic List Renderer ===
+    const renderList = (element, items, emptyState) => {
+        element.innerHTML = ""; // Clear previous items
+        if (!items || items.length === 0) {
+            element.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas ${emptyState.icon}"></i>
+                    <p>${emptyState.message}</p>
+                </div>`;
+            return;
+        }
+        const fragment = document.createDocumentFragment();
+        items.forEach(item => fragment.appendChild(createAnimeCard(item)));
+        element.appendChild(fragment);
+    };
 
-        if (!animeArray || !animeArray.length) {
-            animeListElem.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-tv"></i>
-                <p>No anime found</p>
-            </div>
-        `;
+    // === Generic Pagination Renderer (REFACTORED) ===
+    const renderPagination = (container, currentPage, totalPages, onPageClick) => {
+        if (totalPages <= 1) {
+            container.innerHTML = "";
             return;
         }
 
-        animeArray.forEach(anime => {
-            const card = createAnimeCard(
-                anime.title,
-                anime.episode ?? null,
-                anime.img ?? null,
-                anime.released ?? null, // Tambahkan released
-                anime,
-                hideEpisode,
-                hideReleased
-            );
-            animeListElem.appendChild(card);
-        });
-    }
-
-    // === Pagination ===
-    function renderPagination() {
-        const pagination = document.getElementById("pagination");
-        if (!pagination || totalPages <= 1) {
-            pagination.innerHTML = "";
-            return;
-        }
-
-        pagination.innerHTML = "";
-
-        const maxVisibleButtons = 5;
-        let startPage = Math.max(
-            1,
-            currentPage - Math.floor(maxVisibleButtons / 2)
-        );
-        let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
-
-        // Adjust if we're at the end
-        if (endPage - startPage + 1 < maxVisibleButtons) {
-            startPage = Math.max(1, endPage - maxVisibleButtons + 1);
-        }
-
-        // Previous button
-        if (currentPage > 1) {
-            const prevBtn = document.createElement("button");
-            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            prevBtn.addEventListener("click", () => {
-                currentPage--;
-                loadAnimeData();
-            });
-            pagination.appendChild(prevBtn);
-        }
-
-        // First page
-        if (startPage > 1) {
-            const firstBtn = document.createElement("button");
-            firstBtn.textContent = "1";
-            firstBtn.addEventListener("click", () => {
-                currentPage = 1;
-                loadAnimeData();
-            });
-            pagination.appendChild(firstBtn);
-
-            if (startPage > 2) {
-                const ellipsis = document.createElement("span");
-                ellipsis.textContent = "...";
-                ellipsis.className = "pagination-ellipsis";
-                pagination.appendChild(ellipsis);
-            }
-        }
-
-        // Page buttons
-        for (let i = startPage; i <= endPage; i++) {
+        const createButton = (content, page) => {
             const btn = document.createElement("button");
-            btn.textContent = i;
-            if (i === currentPage) btn.classList.add("active");
-            btn.addEventListener("click", () => {
-                currentPage = i;
-                loadAnimeData();
-            });
-            pagination.appendChild(btn);
-        }
-
-        // Last page
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) {
-                const ellipsis = document.createElement("span");
-                ellipsis.textContent = "...";
-                ellipsis.className = "pagination-ellipsis";
-                pagination.appendChild(ellipsis);
+            btn.innerHTML = content;
+            if (page) {
+                btn.addEventListener("click", () => onPageClick(page));
             }
+            return btn;
+        };
+        
+        const fragment = document.createDocumentFragment();
 
-            const lastBtn = document.createElement("button");
-            lastBtn.textContent = totalPages;
-            lastBtn.addEventListener("click", () => {
-                currentPage = totalPages;
-                loadAnimeData();
-            });
-            pagination.appendChild(lastBtn);
+        // Prev button
+        const prevBtn = createButton('<i class="fas fa-chevron-left"></i>', currentPage - 1);
+        if (currentPage === 1) prevBtn.disabled = true;
+        fragment.appendChild(prevBtn);
+
+        // Page info (simple version for history/bookmarks)
+        if (onPageClick.name.includes("renderStoredItems")) {
+            const pageInfo = document.createElement("span");
+            pageInfo.className = "pagination-info";
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+            fragment.appendChild(pageInfo);
         }
+        // ... (can add complex pagination logic for main list here if needed)
 
         // Next button
-        if (currentPage < totalPages) {
-            const nextBtn = document.createElement("button");
-            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            nextBtn.addEventListener("click", () => {
-                currentPage++;
-                loadAnimeData();
-            });
-            pagination.appendChild(nextBtn);
-        }
-    }
+        const nextBtn = createButton('<i class="fas fa-chevron-right"></i>', currentPage + 1);
+        if (currentPage >= totalPages) nextBtn.disabled = true;
+        fragment.appendChild(nextBtn);
+        
+        container.replaceChildren(fragment);
+    };
 
-    // === Load Anime Data ===
+    // === Load & Render API Data ===
     async function loadAnimeData() {
         showLoader();
-
         try {
             let url;
             if (currentSearchQuery.trim()) {
                 url = `/API/search?q=${encodeURIComponent(currentSearchQuery)}`;
             } else if (currentGenre) {
-                url = `/API/genre?genre=${encodeURIComponent(
-                    currentGenre
-                )}&page=${currentPage}`;
+                url = `/API/genre?genre=${encodeURIComponent(currentGenre)}&page=${currentPage}`;
             } else {
                 url = `/API/home?page=${currentPage}`;
             }
 
             const res = await fetch(url);
-            if (!res.ok) throw new Error("Fetch error");
-
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
             const data = await res.json();
-
-            // Handle empty home response
-            if (
-                currentPage > 1 &&
-                !currentSearchQuery &&
-                !currentGenre &&
-                data.length === 0
-            ) {
-                currentPage = 1;
-                await loadAnimeData();
-                return;
-            }
-
-            // Handle different response structures
-            if (data.results) {
-                // Genre/search response
-                renderAnimeList(data.results, true, true);
-                totalPages = data.totalPages || 1;
-                currentPage = data.currentPage || 1;
-            } else {
-                // Home response
-                renderAnimeList(data);
-                // Update total pages based on response
-                totalPages = data.length > 0 ? currentPage + 1 : currentPage;
-            }
-
-            renderPagination();
+            
+            const results = data.results || data;
+            renderList(animeListElem, results, { icon: 'fa-tv', message: 'No anime found' });
+            
+            totalPages = data.totalPages || (results.length > 0 ? currentPage + 1 : currentPage);
+            // Main pagination logic can be expanded here if needed
+            
         } catch (err) {
             console.error("Fetch error:", err);
-            animeListElem.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>Error loading anime</p>
-            </div>
-        `;
+            renderList(animeListElem, [], { icon: 'fa-exclamation-triangle', message: 'Error loading anime' });
         } finally {
             hideLoader();
         }
     }
 
-    // === Search Functionality ===
-    let debounceTimeout;
+    // === Render Stored Items (History/Bookmark - REFACTORED) ===
+    const renderStoredItems = (type, page = 1) => {
+        const key = type === 'history' ? LOCAL_STORAGE_KEYS.HISTORY : LOCAL_STORAGE_KEYS.BOOKMARKS;
+        const items = getFromLocalStorage(key);
+
+        const container = type === 'history' ? historyListElem : bookmarkListElem;
+        const paginationContainer = document.getElementById(type === 'history' ? 'historyPagination' : 'bookmarkPagination');
+
+        const totalItems = items.length;
+        if (totalItems === 0) {
+            const emptyState = type === 'history'
+                ? { icon: 'fa-clock-rotate-left', message: 'No watch history yet' }
+                : { icon: 'fa-bookmark', message: "You don't have any bookmarks" };
+            renderList(container, [], emptyState);
+            paginationContainer.innerHTML = "";
+            return;
+        }
+        
+        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+        const startIdx = (page - 1) * ITEMS_PER_PAGE;
+        const pageItems = items.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+        renderList(container, pageItems, {});
+        renderPagination(paginationContainer, page, totalPages, (newPage) => renderStoredItems(type, newPage));
+    };
+
+    // === Event Listeners Setup ===
+    darkModeToggle.addEventListener("click", toggleDarkMode);
+    refreshButton.addEventListener("click", () => location.reload());
+    navLinks.forEach(link => link.addEventListener("click", handleNavClick));
+
     searchInput.addEventListener("input", e => {
         currentSearchQuery = e.target.value;
         currentGenre = "";
+        genreSelect.value = "";
         currentPage = 1;
         clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(() => {
-            loadAnimeData();
-        }, 300);
+        debounceTimeout = setTimeout(loadAnimeData, 300);
     });
 
-    // === Genre Filter ===
     genreSelect.addEventListener("change", () => {
         currentGenre = genreSelect.value;
         currentSearchQuery = "";
+        searchInput.value = "";
         currentPage = 1;
         loadAnimeData();
     });
 
-    // === History Management ===
-    function renderHistory(page = 1) {
-        const history = JSON.parse(localStorage.getItem("history")) || [];
-        const historyBox = document.getElementById("historyBox");
-        const historyList = document.getElementById("historyList");
-
-        if (!history.length) {
-            historyList.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-clock-rotate-left"></i>
-                    <p>No watch history yet</p>
-                </div>
-            `;
-            return;
-        }
-
-        historyList.innerHTML = "";
-
-        const itemsPerPage = 10;
-        const totalPages = Math.ceil(history.length / itemsPerPage);
-        const startIdx = (page - 1) * itemsPerPage;
-        const endIdx = startIdx + itemsPerPage;
-        const pageItems = history.slice(startIdx, endIdx);
-
-        pageItems.forEach(anime => {
-            const card = createAnimeCard(
-                anime.title,
-                anime.episode,
-                anime.img,
-                undefined,
-                anime,
-                false,
-                true
-            );
-            historyList.appendChild(card);
-        });
-
-        renderHistoryPagination(page, totalPages);
-    }
-
-    function renderBookmark(page = 1) {
-        const bookmark = JSON.parse(localStorage.getItem("bookmarks")) || [];
-        const bookmarkBox = document.getElementById("bookmarkBox");
-        const bookmarkList = document.getElementById("bookmarkList");
-
-        if (!bookmark.length) {
-            bookmarkList.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-bookmark"></i>
-                    <p>you don't have any bookmarks</p>
-                </div>
-            `;
-            return;
-        }
-
-        bookmarkList.innerHTML = "";
-
-        const itemsPerPage = 10;
-        const totalPages = Math.ceil(bookmark.length / itemsPerPage);
-        const startIdx = (page - 1) * itemsPerPage;
-        const endIdx = startIdx + itemsPerPage;
-        const pageItems = bookmark.slice(startIdx, endIdx);
-
-        pageItems.forEach(anime => {
-            const card = createAnimeCard(
-                anime.title,
-                null,
-                anime.img,
-                null,
-                anime,
-                true,
-                true
-            );
-            bookmarkList.appendChild(card);
-        });
-
-        renderBookmarkPagination(page, totalPages);
-    }
-
-    function renderHistoryPagination(currentPage, totalPages) {
-        const pagination = document.getElementById("historyPagination");
-        if (!pagination || totalPages <= 1) {
-            pagination.innerHTML = "";
-            return;
-        }
-
-        pagination.innerHTML = "";
-
-        // Previous button
-        if (currentPage > 1) {
-            const prevBtn = document.createElement("button");
-            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            prevBtn.addEventListener("click", () =>
-                renderHistory(currentPage - 1)
-            );
-            pagination.appendChild(prevBtn);
-        }
-
-        // Current page indicator
-        const pageInfo = document.createElement("span");
-        pageInfo.className = "pagination-info";
-        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-        pagination.appendChild(pageInfo);
-
-        // Next button
-        if (currentPage < totalPages) {
-            const nextBtn = document.createElement("button");
-            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            nextBtn.addEventListener("click", () =>
-                renderHistory(currentPage + 1)
-            );
-            pagination.appendChild(nextBtn);
-        }
-    }
-
-    function renderBookmarkPagination(currentPage, totalPages) {
-        const pagination = document.getElementById("bookmarkPagination");
-        if (!pagination || totalPages <= 1) {
-            pagination.innerHTML = "";
-            return;
-        }
-
-        pagination.innerHTML = "";
-
-        // Previous button
-        if (currentPage > 1) {
-            const prevBtn = document.createElement("button");
-            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            prevBtn.addEventListener("click", () =>
-                renderBookmark(currentPage - 1)
-            );
-            pagination.appendChild(prevBtn);
-        }
-
-        // Current page indicator
-        const pageInfo = document.createElement("span");
-        pageInfo.className = "pagination-info";
-        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-        pagination.appendChild(pageInfo);
-
-        // Next button
-        if (currentPage < totalPages) {
-            const nextBtn = document.createElement("button");
-            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            nextBtn.addEventListener("click", () =>
-                renderBookmark(currentPage + 1)
-            );
-            pagination.appendChild(nextBtn);
-        }
-    }
-
-    // === Loading State ===
-    function showLoader() {
-        loader.style.display = "flex";
-    }
-
-    function hideLoader() {
-        loader.style.display = "none";
-    }
-
     // === Initialize App ===
-    initializeDarkMode();
-    loadAnimeData();
-    renderHistory();
-})();
+    const initializeApp = () => {
+        initializeDarkMode();
+        loadAnimeData();
+        // Hide loader initially with JS to avoid flash of content
+        document.body.style.overflow = 'hidden'; // Prevent scrolling while loading
+        setTimeout(() => {
+            hideLoader();
+            document.body.style.overflow = '';
+        }, 500); // Give a minimum show time for the loader
+    };
+
+    initializeApp();
+});

@@ -1,5 +1,5 @@
 /* ===== Base Styles & Variables ===== */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+/* Menghapus @import, karena sudah dipindah ke HTML untuk performa */
 
 :root {
     /* Colors - Light Mode */
@@ -35,11 +35,12 @@
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
-    --radius-xl: 24px;
 }
 
 /* ===== Global Styles ===== */
-* {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -49,7 +50,7 @@ body {
     font-family: "Poppins", sans-serif;
     background-color: var(--color-bg-light);
     color: var(--color-text-light);
-    transition: var(--transition);
+    transition: background-color 0.3s, color 0.3s;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -61,14 +62,27 @@ body.dark {
     color: var(--color-text-dark);
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+
 /* ===== Header Styles ===== */
 .main-header {
     background-color: var(--color-card-bg-light);
     box-shadow: var(--shadow-light);
     position: sticky;
     top: 0;
-    z-index: 100;
-    transition: var(--transition);
+    z-index: 1000;
+    transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 body.dark .main-header {
@@ -90,11 +104,15 @@ body.dark .main-header {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    font-size: 1.8rem;
+    font-size: 1.5rem; /* Sedikit disesuaikan */
     font-weight: 700;
     color: var(--color-primary);
     text-decoration: none;
-    transition: var(--transition);
+    transition: transform 0.3s;
+}
+
+.logo:hover {
+    transform: scale(1.05);
 }
 
 .logo-icon {
@@ -105,10 +123,10 @@ body.dark .main-header {
 .main-nav {
     display: flex;
     gap: var(--spacing-sm);
-    margin: 0 auto;
 }
 
-.nav-btn {
+/* Style untuk tag <a> yang sekarang menjadi navigasi */
+.nav-link {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
@@ -120,24 +138,35 @@ body.dark .main-header {
     cursor: pointer;
     color: var(--color-gray);
     transition: var(--transition);
+    text-decoration: none;
 }
 
-.nav-btn i {
+.nav-link i {
     font-size: 1.1em;
 }
 
-.nav-btn:hover, .nav-btn.active {
+.nav-link:hover, .nav-link.active {
     color: var(--color-primary);
     background-color: rgba(255, 71, 87, 0.1);
 }
 
-body.dark .nav-btn:hover, 
-body.dark .nav-btn.active {
+body.dark .nav-link {
+    color: var(--color-light-gray);
+}
+
+body.dark .nav-link:hover, 
+body.dark .nav-link.active {
+    color: var(--color-primary);
     background-color: rgba(255, 71, 87, 0.2);
 }
 
-/* ===== Dark Mode Toggle ===== */
-.dark-mode-toggle {
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.action-btn {
     background-color: transparent;
     border: none;
     color: var(--color-gray);
@@ -152,24 +181,23 @@ body.dark .nav-btn.active {
     transition: var(--transition);
 }
 
-.dark-mode-toggle:hover {
+.action-btn:hover {
     color: var(--color-primary);
     background-color: rgba(255, 71, 87, 0.1);
 }
 
-body.dark .dark-mode-toggle {
+body.dark .action-btn {
     color: var(--color-text-dark);
 }
 
-body.dark .dark-mode-toggle:hover {
-    color: var(--color-primary);
+body.dark .action-btn:hover {
     background-color: rgba(255, 71, 87, 0.2);
 }
 
 /* ===== Main Content ===== */
 .main-content {
     flex: 1;
-    padding: var(--spacing-lg) 0;
+    padding: var(--spacing-lg) var(--spacing-lg); /* Padding konsisten */
     max-width: 1400px;
     width: 100%;
     margin: 0 auto;
@@ -177,14 +205,13 @@ body.dark .dark-mode-toggle:hover {
 
 /* ===== Search Section ===== */
 .search-section {
-    padding: 0 var(--spacing-lg);
     margin-bottom: var(--spacing-lg);
-}
-
-.search-container {
-    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
     max-width: 800px;
-    margin: 0 auto var(--spacing-md);
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .search-input-wrapper {
@@ -223,10 +250,6 @@ body.dark .search-input {
     box-shadow: var(--shadow-dark);
 }
 
-body.dark .search-input:focus {
-    border-color: var(--color-primary);
-}
-
 .search-icon {
     position: absolute;
     left: 1rem;
@@ -238,12 +261,6 @@ body.dark .search-input:focus {
 }
 
 /* ===== Genre Filter ===== */
-.genre-filter-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
 .genre-select {
     width: 100%;
     padding: var(--spacing-sm) var(--spacing-lg);
@@ -276,18 +293,10 @@ body.dark .genre-select {
     box-shadow: var(--shadow-dark);
 }
 
-/* ===== Anime Section ===== */
-.anime-section {
-    padding: 0 var(--spacing-lg);
-}
-
+/* ===== Anime Display Section ===== */
 .anime-box {
-    background-color: var(--color-card-bg-light);
-    border-radius: var(--radius-md);
     padding: var(--spacing-lg);
     margin-bottom: var(--spacing-lg);
-    box-shadow: var(--shadow-light);
-    transition: var(--transition);
     display: none;
 }
 
@@ -301,44 +310,27 @@ body.dark .genre-select {
     to { opacity: 1; transform: translateY(0); }
 }
 
-body.dark .anime-box {
-    background-color: var(--color-card-bg-dark);
-    box-shadow: var(--shadow-dark);
-}
-
 .anime-box-title {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-sm);
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--color-primary);
     margin-bottom: var(--spacing-lg);
 }
 
-.anime-box-title i {
-    font-size: 1.2em;
-}
-
-body.dark .anime-box-title {
-    color: var(--color-primary);
-}
+.anime-box-title i { font-size: 1.2em; }
 
 /* ===== Anime Grid ===== */
 .anime-box-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    /* Dibuat lebih responsif */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
 }
 
-@media (max-width: 768px) {
-    .anime-box-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
-}
-
-/* ===== Anime Card ===== */
+/* ===== Anime Card (IMPROVED) ===== */
 .anime-card {
     background-color: var(--color-card-bg-light);
     border-radius: var(--radius-md);
@@ -347,11 +339,13 @@ body.dark .anime-box-title {
     transition: var(--transition);
     position: relative;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
 }
 
 .anime-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
 body.dark .anime-card {
@@ -359,68 +353,105 @@ body.dark .anime-card {
     box-shadow: var(--shadow-dark);
 }
 
-.anime-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
+.anime-image-wrapper {
+    position: relative;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%);
-    opacity: 0;
-    transition: var(--transition);
-}
-
-.anime-card:hover::before {
-    opacity: 1;
+    /* Aspek rasio 2:3 untuk poster, membuat grid rapi */
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
 }
 
 .anime-image {
     width: 100%;
-    height: 280px;
+    height: 100%;
     object-fit: cover;
-    transition: var(--transition);
+    transition: transform 0.4s ease;
 }
 
 .anime-card:hover .anime-image {
-    transform: scale(1.05);
+    transform: scale(1.1);
+}
+
+/* Gradient permanen di bawah untuk keterbacaan judul */
+.anime-image-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    z-index: 1;
 }
 
 .anime-info {
     padding: var(--spacing-sm);
-    position: relative;
-    z-index: 1;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+/* Menggeser judul ke atas gambar dengan position absolute */
+.anime-title-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--spacing-sm);
+    z-index: 2;
+    color: #fff;
 }
 
 .anime-title {
     font-weight: 600;
     font-size: 1rem;
-    margin-bottom: var(--spacing-xs);
-    color: var(--color-text-light);
+    margin-bottom: 4px;
+    color: var(--color-text-light); /* Warna default, akan ditimpa di overlay */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.3;
 }
 
 body.dark .anime-title {
     color: var(--color-text-dark);
 }
 
-.anime-episode {
+.anime-title-overlay .anime-title {
+    color: #fff;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
+
+
+.anime-episode, .anime-released {
     font-size: 0.85rem;
-    color: var(--color-primary);
     font-weight: 500;
 }
+
+.anime-episode {
+    color: var(--color-primary);
+}
+
+.anime-released {
+    color: var(--color-gray);
+}
+
+body.dark .anime-released {
+    color: var(--color-light-gray);
+}
+
 
 /* ===== Pagination ===== */
 .pagination-container {
     display: flex;
     justify-content: center;
+    align-items: center;
     flex-wrap: wrap;
     gap: var(--spacing-xs);
-    margin-top: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
 }
 
 .pagination-container button {
@@ -435,7 +466,7 @@ body.dark .anime-title {
     transition: var(--transition);
 }
 
-.pagination-container button:hover {
+.pagination-container button:hover:not(:disabled) {
     background-color: rgba(255, 71, 87, 0.1);
 }
 
@@ -447,31 +478,15 @@ body.dark .anime-title {
 .pagination-container button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    border-color: var(--color-gray);
+    color: var(--color-gray);
 }
 
-.pagination-container button:first-child,
-.pagination-container button:last-child {
-    font-weight: bold;
+.pagination-ellipsis, .pagination-info {
+    padding: 0 var(--spacing-xs);
+    color: var(--color-gray);
 }
 
-body.dark .pagination-container button {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-}
-
-body.dark .pagination-container button.active {
-    background-color: var(--color-primary);
-    color: white;
-}
-
-/* ===== History Section ===== */
-#historyBox {
-    margin-top: 2rem;
-}
-
-#historyPagination {
-    margin-top: 1rem;
-}
 
 /* ===== Loading Screen ===== */
 #loading-screen {
@@ -480,12 +495,19 @@ body.dark .pagination-container button.active {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: none;
+    background-color: rgba(26, 32, 44, 0.9); /* Menggunakan warna dark-bg */
+    display: flex; /* Dibuat flex by default, dikontrol oleh JS */
     flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+#loading-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .loading-text {
@@ -504,14 +526,14 @@ body.dark .pagination-container button.active {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    to { transform: rotate(360deg); }
 }
 
+/* ===== Footer ===== */
 .main-footer {
     background-color: var(--color-card-bg-light);
     color: var(--color-gray);
-    padding: var(--spacing-lg) 0;
+    padding: var(--spacing-lg);
     text-align: center;
     margin-top: auto;
     transition: var(--transition);
@@ -519,13 +541,11 @@ body.dark .pagination-container button.active {
 
 body.dark .main-footer {
     background-color: var(--color-card-bg-dark);
-    color: var(--color-text-dark);
 }
 
 .footer-content {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 var(--spacing-lg);
 }
 
 .social-links {
@@ -537,20 +557,18 @@ body.dark .main-footer {
 
 .social-links a {
     color: var(--color-gray);
-    font-size: 1.2rem;
+    font-size: 1.5rem; /* Dibesarkan sedikit */
     transition: var(--transition);
 }
 
 .social-links a:hover {
     color: var(--color-primary);
-}
-
-body.dark .social-links a {
-    color: var(--color-text-dark);
+    transform: translateY(-3px);
 }
 
 /* ===== Empty State ===== */
 .empty-state {
+    grid-column: 1 / -1; /* Memastikan memenuhi grid */
     text-align: center;
     padding: var(--spacing-xl) 0;
     color: var(--color-gray);
@@ -566,38 +584,32 @@ body.dark .social-links a {
     font-size: 1.2rem;
 }
 
-.anime-released {
-    font-size: 0.8rem;
-    color: var(--color-gray);
-    margin-top: 0.3rem;
-}
-
-body.dark .anime-released {
-    color: var(--color-light-gray);
-}
-
 /* ===== Responsive Adjustments ===== */
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;
         gap: var(--spacing-sm);
     }
+    .main-nav { order: 1; }
+    .header-actions { order: 2; }
     
-    .main-nav {
-        margin: var(--spacing-sm) 0;
-    }
-    
-    .anime-image {
-        height: 200px;
+    .anime-box-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: var(--spacing-md);
     }
 }
 
 @media (max-width: 480px) {
+    .main-content, .header-content, .footer-content {
+        padding-left: var(--spacing-sm);
+        padding-right: var(--spacing-sm);
+    }
+
     .anime-box-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: var(--spacing-sm);
     }
-    
-    .anime-image {
-        height: 160px;
-    }
+    .anime-title { font-size: 0.9rem; }
+    .nav-link span { display: none; } /* Hanya tampilkan ikon di mobile */
+    .nav-link { padding: var(--spacing-sm); }
 }

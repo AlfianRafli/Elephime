@@ -1,125 +1,94 @@
 <!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-            name="description"
-            content="Anime details on Elephime - Your ultimate anime streaming platform"
-        />
-        <link rel="icon" href="../assets/favico.png" type="image/png" />
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Anime details on Elephime - Your ultimate anime streaming platform" />
+    <title>Elephime - Anime Details</title>
 
-        <meta
-            property="og:image"
-            content="https://elephant.my.id/assets/favico.png"
-        />
-        <meta property="og:image:type" content="image/png" />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
-        <meta name="theme-color" content="#718096" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="icon" href="../assets/favico.png" type="image/png" />
+    <meta property="og:image" content="https://elephant.my.id/assets/favico.png" />
+    <meta name="theme-color" content="#718096" />
+    
+    <link rel="stylesheet" href="anime.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div id="loading-screen" style="display: none;">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading anime details...</p>
+    </div>
 
-        <title>Elephime - Anime Details</title>
-        <link rel="stylesheet" href="anime.css" />
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        />
-    </head>
-    <body>
-        <div id="loading-screen">
-            <div class="spinner" aria-label="Loading"></div>
-            <p class="loading-text">Loading anime details...</p>
+    <header class="main-header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <i class="fas fa-shapes logo-icon"></i>
+                <span>Elephime</span>
+            </a>
+            <button class="dark-mode-toggle" id="theme-toggle-button" aria-label="Toggle Dark Mode" title="Toggle Dark Mode">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
+    </header>
 
-        <header class="main-header">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <i class="fas fa-shapes logo-icon"></i>
-                    <span>Elephime</span>
-                </a>
-                <button
-                    class="dark-mode-toggle"
-                    id="theme-toggle-button"
-                    aria-label="Toggle Dark Mode"
-                    title="Toggle Dark Mode"
-                >
-                    <i class="fas fa-moon"></i>
-                </button>
-            </div>
-        </header>
+    <main class="anime-container">
+        <article class="anime-detail">
+            <section class="anime-poster">
+                <div class="anime-image skeleton" aria-label="Anime cover image"></div>
+            </section>
 
-        <main class="anime-container">
-            <article class="anime-detail">
-                <section class="anime-poster">
-                    <div
-                        class="anime-image"
-                        aria-label="Anime cover image"
-                    ></div>
-                </section>
+            <section class="anime-info">
+                <h1 class="anime-title">
+                    <i class="fas fa-film"></i>
+                    <span id="title-text" class="skeleton skeleton-text"></span>
+                </h1>
 
-                <section class="anime-info">
-                    <br />
-                    <h1 class="anime-title">
-                        <i class="fas fa-film"></i>
-                        <span id="title-text">Loading...</span>
-                    </h1>
-
-                    <div class="action-buttons">
-                        <button id="bookmark-button" class="bookmark-btn">
-                            <i class="far fa-bookmark"></i>
-                            <span>Bookmark</span>
-                        </button>
-                    </div>
-
-                    <div class="anime-meta">
-                        <div class="rating">
-                            <i class="fas fa-star"></i>
-                            <span id="rating-text">-</span>
-                        </div>
-                        <div
-                            class="meta-grid"
-                            aria-label="Anime information"
-                        ></div>
-                    </div>
-
-                    <div class="synopsis">
-                        <h2>
-                            <i class="fas fa-book-open"></i>
-                            Synopsis
-                        </h2>
-                        <p class="synopsis-text">Loading synopsis...</p>
-                    </div>
-
-                    <div class="episodes">
-                        <h2>
-                            <i class="fas fa-list-ol"></i>
-                            Episodes
-                        </h2>
-                        <div
-                            class="episodes-list"
-                            aria-label="Episode list"
-                        ></div>
-                    </div>
-                </section>
-            </article>
-        </main>
-
-        <footer class="main-footer">
-            <div class="footer-content">
-                <p>&copy; 2025 Elephime</p>
-                <div class="social-links">
-                    <a
-                        href="https://github.com/AlfianRafli/Elephime"
-                        aria-label="GitHub"
-                        ><i class="fab fa-github"></i
-                    ></a>
-                    <a href="https://discord.gg/efhwMuuR9n" aria-label="Discord"
-                        ><i class="fa-brands fa-discord"></i
-                    ></a>
+                <div class="action-buttons">
+                    <button id="bookmark-button" class="bookmark-btn skeleton">
+                        <i class="far fa-bookmark"></i>
+                        <span>Bookmark</span>
+                    </button>
                 </div>
-            </div>
-        </footer>
 
-        <script src="anime.js"></script>
-    </body>
+                <div class="anime-meta">
+                    <div class="rating">
+                        <i class="fas fa-star"></i>
+                        <span id="rating-text" class="skeleton skeleton-text"></span>
+                    </div>
+                    <div class="meta-grid" aria-label="Anime information">
+                        </div>
+                </div>
+
+                <div class="synopsis">
+                    <h2><i class="fas fa-book-open"></i> Synopsis</h2>
+                    <p class="synopsis-text skeleton skeleton-text"></p>
+                </div>
+
+                <div class="episodes">
+                    <h2><i class="fas fa-list-ol"></i> Episodes</h2>
+                    <div class="episodes-list" aria-label="Episode list">
+                        </div>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Elephime</p>
+            <div class="social-links">
+                <a href="https://github.com/AlfianRafli/Elephime" aria-label="GitHub" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                <a href="https://discord.gg/efhwMuuR9n" aria-label="Discord" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="anime.js" defer></script>
+</body>
 </html>
