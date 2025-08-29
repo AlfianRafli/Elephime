@@ -15,7 +15,7 @@ app.use(express.json());
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 2,
+  max: 150,
   message: { error: "Too many requests, please try again later" }
 });
 
@@ -97,10 +97,10 @@ app.use((req, res, next) => {
 
 if (config.https) {
 	const options = {
-		key: fs.readFileSync(config.tls.key), // select ur key and cert
-		cert: fs.readFileSync(config.tls.cert)
+		key: fs.readFileSync(config.key), // select ur key and cert
+		cert: fs.readFileSync(config.cert)
 	};
-	https.createServer(config.tls, app).listen(443, () => {
+	https.createServer(options, app).listen(443, () => {
 		console.log("Server running on https://" + domain);
     });
 } else {
