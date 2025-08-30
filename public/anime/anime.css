@@ -91,7 +91,7 @@ body.dark .skeleton::after {
     content: "\00a0"; /* Non-breaking space untuk menjaga tinggi elemen */
 }
 
-/* ===== Header & Footer Styles ===== */
+/* ===== Header ===== */
 .main-header {
     background-color: var(--color-card-bg-light);
     box-shadow: var(--shadow-light);
@@ -146,15 +146,41 @@ body.dark .main-header {
 body.dark .dark-mode-toggle {
     color: var(--color-text-dark);
 }
+/* ===== Footer ===== */
 .main-footer {
     background-color: var(--color-card-bg-light);
     color: var(--color-gray);
-    padding: var(--spacing-lg) 0;
+    padding: var(--spacing-lg);
     text-align: center;
     margin-top: auto;
+    transition: var(--transition);
 }
+
 body.dark .main-footer {
     background-color: var(--color-card-bg-dark);
+}
+
+.footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.social-links a {
+    color: var(--color-gray);
+    font-size: 1.5rem; /* Dibesarkan sedikit */
+    transition: var(--transition);
+}
+
+.social-links a:hover {
+    color: var(--color-primary);
+    transform: translateY(-3px);
 }
 
 /* ===== Main Content ===== */
@@ -187,7 +213,7 @@ body.dark .anime-detail {
 }
 
 .anime-image {
-    display: block; /* Pastikan elemen ini adalah block-level */
+    display: block;
     width: 100%; /* Ambil lebar penuh dari parent (.anime-poster) */
     aspect-ratio: 2/3; /* Atur tinggi berdasarkan lebar dengan rasio 2:3 */
     background-size: cover;
