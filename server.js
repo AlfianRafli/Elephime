@@ -12,6 +12,7 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
+app.set("trust proxy", 1); // read original IP
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
