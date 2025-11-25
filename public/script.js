@@ -106,9 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const image = document.createElement("img");
         image.className = "anime-image";
         image.alt = title;
-        image.src = img
-            ? `/API/proxy-image?url=${encodeURIComponent(img)}`
-            : "assets/placeholder.png";
+        image.src = img || "assets/placeholder.png";
         image.loading = "lazy";
         image.addEventListener("error", () => {
             image.src = "assets/placeholder.png";
@@ -148,13 +146,12 @@ document.addEventListener("DOMContentLoaded", () => {
             };
 
             deleteBtn.addEventListener("click", e => {
-                e.stopPropagation(); 
+                e.stopPropagation();
                 if (confirm(`Delete "${title}" from history?`)) {
                     let history = getFromLocalStorage(
                         LOCAL_STORAGE_KEYS.HISTORY
                     );
-                    history = history.filter(item => item.title !== title
-                    );
+                    history = history.filter(item => item.title !== title);
                     localStorage.setItem(
                         LOCAL_STORAGE_KEYS.HISTORY,
                         JSON.stringify(history)
@@ -168,8 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             imgWrapper.appendChild(deleteBtn);
-        }
-        else {
+        } else {
             const history = getFromLocalStorage(LOCAL_STORAGE_KEYS.HISTORY);
             const historyItem = history.find(h => h.title === title);
             if (historyItem) {
@@ -209,7 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
             Object.assign(historyInfoContainer.style, {
                 display: "flex",
                 flexDirection: "column",
-                gap: "4px", 
+                gap: "4px",
                 marginTop: "auto"
             });
 
@@ -374,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // === Render Stored Items ===
+    // === Render Stored Items (Updated with Delete All) ===
     const renderStoredItems = (type, page = 1) => {
         const key =
             type === "history"
@@ -388,6 +384,74 @@ document.addEventListener("DOMContentLoaded", () => {
             type === "history" ? "historyPagination" : "bookmarkPagination"
         );
 
+        // [FITUR BARU] Logic Tombol Delete All (Hanya untuk History)
+        if (type === "history") {
+            const historyTitleContainer = document.querySelector(
+                "#historyBox .anime-box-title"
+            );
+            let deleteAllBtn = document.getElementById("deleteAllHistoryBtn");
+
+            // Jika ada items, tampilkan tombol. Jika kosong, hapus tombol.
+            if (items.length > 0) {
+                if (!deleteAllBtn) {
+                    deleteAllBtn = document.createElement("button");
+                    deleteAllBtn.id = "deleteAllHistoryBtn";
+                    deleteAllBtn.innerHTML =
+                        '<i class="fas fa-dumpster-fire"></i> Delete All';
+
+                    // Styling Inline agar rapi
+                    Object.assign(deleteAllBtn.style, {
+                        marginLeft: "auto", // Dorong ke kanan
+                        fontSize: "0.85rem",
+                        padding: "6px 12px",
+                        backgroundColor: "#ff4757",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        transition: "background 0.3s"
+                    });
+
+                    // Hover effect
+                    deleteAllBtn.onmouseenter = () =>
+                        (deleteAllBtn.style.backgroundColor = "#e03a4b");
+                    deleteAllBtn.onmouseleave = () =>
+                        (deleteAllBtn.style.backgroundColor = "#ff4757");
+
+                    // Logic Hapus Semua
+                    deleteAllBtn.onclick = () => {
+                        if (
+                            confirm(
+                                "Yakin ingin menghapus SEMUA riwayat tontonan? Tindakan ini tidak bisa dibatalkan."
+                            )
+                        ) {
+                            localStorage.removeItem(LOCAL_STORAGE_KEYS.HISTORY);
+                            // Hapus juga daftar episode yang sudah ditonton (tanda abu-abu)
+                            localStorage.removeItem(LOCAL_STORAGE_KEYS.WATCHED);
+
+                            // Re-render untuk menampilkan state kosong
+                            renderStoredItems("history");
+                        }
+                    };
+
+                    // Pastikan container judul menggunakan Flexbox agar tombol ada di kanan
+                    historyTitleContainer.style.display = "flex";
+                    historyTitleContainer.style.alignItems = "center";
+                    historyTitleContainer.style.justifyContent =
+                        "space-between"; // Judul kiri, Tombol kanan
+
+                    historyTitleContainer.appendChild(deleteAllBtn);
+                }
+            } else {
+                // Jika history kosong, hapus tombolnya jika ada
+                if (deleteAllBtn) deleteAllBtn.remove();
+            }
+        }
+
+        // Logic Rendering List (Sama seperti sebelumnya)
         const totalItems = items.length;
         if (totalItems === 0) {
             const emptyState =

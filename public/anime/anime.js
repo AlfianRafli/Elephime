@@ -239,43 +239,83 @@ document.addEventListener("DOMContentLoaded", () => {
         updateButtonState();
     };
 
-    // === Comment Section Logic (Using Disqus - Online & Public) ===
-    const renderCommentSection = async (animeUrl, title, id) => {
+    // === Comment Section Logic (Using Giscus - No Ads) ===
+    const renderCommentSection = async (animeUrl, title) => {
+        // 1. Bersihkan & Siapkan Container
         elements.commentsContainer.innerHTML = `
-            <div class="comments-header">
+            <div class="comments-header" style="margin-bottom: 1rem;">
                 <h2><i class="fas fa-comments"></i> Discussion</h2>
             </div>
-            <div id="disqus_thread"></div>
-            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+            <div class="giscus">
+                <div class="skeleton" style="height: 150px; border-radius: 8px;"></div>
+            </div>
         `;
 
-        const res = await fetch("/API/settings");
-        const settings = await res.json();
-        const disqus_shortname = settings.disqusShortname;
+        try {
+            // 2. Ambil Config dari Server
+            const res = await fetch("/API/settings");
+            const settings = await res.json();
+            const config = settings.giscus;
 
-        if (window.DISQUS) {
-            window.DISQUS.reset({
-                reload: true,
-                config: function () {
-                    this.page.url = window.location.href;
-                    this.page.identifier = animeUrl;
-                    this.page.title = title;
-                }
+            if (!config || !config.repo) {
+                elements.commentsContainer.innerHTML += `<p style="color:red">Giscus configuration missing.</p>`;
+                return;
+            }
+
+            // 3. Buat Script Giscus
+            // Kita hapus skeleton loader saat script dimuat
+            const giscusContainer = document.querySelector(".giscus");
+            giscusContainer.innerHTML = ""; // Hapus skeleton
+
+            const script = document.createElement("script");
+            script.src = "https://giscus.app/client.js";
+
+            // Set Atribut Giscus sesuai dokumentasi
+            script.setAttribute("data-repo", config.repo);
+            script.setAttribute("data-repo-id", config.repoId);
+            script.setAttribute("data-category", config.category);
+            script.setAttribute("data-category-id", config.categoryId);
+
+            // Mapping: Kita gunakan URL spesifik anime sebagai kunci diskusi
+            // Giscus akan mencari diskusi dengan judul yang mengandung URL ini
+            script.setAttribute("data-mapping", "specific");
+            script.setAttribute("data-term", animeUrl); // URL unik anime (misal: .../anime/naruto)
+
+            script.setAttribute("data-strict", "0");
+            script.setAttribute("data-reactions-enabled", "1");
+            script.setAttribute("data-emit-metadata", "0");
+            script.setAttribute("data-input-position", "top");
+
+            // Tema: Sesuaikan dengan LocalStorage user (Dark/Light)
+            const isDark = localStorage.getItem("darkMode") === "true";
+            script.setAttribute("data-theme", isDark ? "dark" : "light");
+
+            script.setAttribute("data-lang", "en");
+            script.setAttribute("crossorigin", "anonymous");
+            script.async = true;
+
+            // 4. Masukkan ke dalam HTML
+            giscusContainer.appendChild(script);
+
+            // 5. Listener untuk Sinkronisasi Dark Mode (Opsional tapi keren)
+            // Jika user klik tombol dark mode, kita kirim pesan ke iframe Giscus untuk ganti tema
+            elements.toggleBtn.addEventListener("click", () => {
+                const newTheme = document.body.classList.contains("dark")
+                    ? "dark"
+                    : "light";
+                const iframe = document.querySelector("iframe.giscus-frame");
+                if (!iframe) return;
+
+                iframe.contentWindow.postMessage(
+                    {
+                        giscus: { setConfig: { theme: newTheme } }
+                    },
+                    "https://giscus.app"
+                );
             });
-        } else {
-            window.disqus_config = function () {
-                this.page.url = window.location.href;
-                this.page.identifier = animeUrl;
-                this.page.title = title;
-            };
-
-            (function () {
-                var d = document,
-                    s = d.createElement("script");
-                s.src = `https://${disqus_shortname}.disqus.com/embed.js`;
-                s.setAttribute("data-timestamp", +new Date());
-                (d.head || d.body).appendChild(s);
-            })();
+        } catch (error) {
+            console.error("Failed to load Giscus:", error);
+            elements.commentsContainer.innerHTML += `<p style="color:var(--color-primary)">Failed to load comments.</p>`;
         }
     };
 
@@ -304,12 +344,14 @@ document.addEventListener("DOMContentLoaded", () => {
             // Save Detail for Watch Page
             // Use Image Proxy for stored data to prevent broken images later
             const proxyImg = storage?.img
-                ? `/API/proxy-image?url=${encodeURIComponent(storage.img)}`
+                ? `https://wsrv.nl/?url=${encodeURIComponent(
+                      storage.img
+                  )}&w=300&h=450&fit=cover&output=webp`
                 : "assets/placeholder.png";
 
             localStorage.setItem(
                 "detail_anime",
-                JSON.stringify({ ...data, img: proxyImg, url: selectedUrl })
+                JSON.stringify({ ...data, img: storage?.img, url: selectedUrl })
             );
 
             // --- Populate UI ---
@@ -318,9 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Image handling with Proxy logic
             const imgUrl = storage.img || data.img;
             elements.image.style.backgroundImage = `url('${
-                imgUrl
-                    ? `/API/proxy-image?url=${encodeURIComponent(imgUrl)}`
-                    : "assets/placeholder.png"
+                imgUrl || "assets/placeholder.png"
             }')`;
 
             elements.rating.textContent = data.rating
@@ -338,10 +378,10 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             addShareButton(data.title, selectedUrl);
 
-            // Initialize Comments (Disqus)
+            // Initialize Comments (Giscus)
             if (elements.commentsContainer) {
-                // Pass URL, Title, dan ID unik (URL anime)
-                renderCommentSection(selectedUrl, data.title, selectedUrl);
+                // Parameter: URL Anime (sebagai ID unik), Judul Anime (opsional, giscus handle sendiri)
+                renderCommentSection(selectedUrl, data.title);
             }
         } catch (error) {
             console.error("Error loading anime data:", error);
