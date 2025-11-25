@@ -141,7 +141,7 @@ app.get("/API/proxy-image", async (req, res) => {
 
 app.get("/API/settings", (req, res) => {
     res.json({
-        disqusShortname: config.disqus || undefined;
+        disqusShortname: config.disqus || undefined
     });
 });
 
