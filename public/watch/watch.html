@@ -1,90 +1,140 @@
 <!doctype html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Watch anime on Elephime - Your ultimate anime streaming platform" />
-    <title>Elephime - Watch Anime</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Watch anime on Elephime - Your ultimate anime streaming platform"
+        />
+        <title>Elephime - Watch Anime</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <link rel="icon" href="../assets/favico.png" type="image/png" />
-    <meta property="og:image" content="https://elephant.my.id/assets/favico.png" />
-    <meta name="theme-color" content="#718096" />
-    
-    <link rel="stylesheet" href="watch.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-</head>
-<body>
-    <header class="main-header">
-        <div class="header-content">
-            <a href="/" class="logo">
-                <i class="fas fa-shapes logo-icon"></i>
-                <span>Elephime</span>
-            </a>
-            <button class="dark-mode-toggle" id="theme-toggle-button" aria-label="Toggle Dark Mode" title="Toggle Dark Mode">
-                <i class="fas fa-moon"></i>
-            </button>
-        </div>
-    </header>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
 
-    <main class="watch-container">
-        <h1 id="video-title" class="video-title">
-            <span id="title-text" class="skeleton skeleton-text"></span>
-        </h1>
+        <link rel="icon" href="../assets/favico.png" type="image/png" />
+        <meta
+            property="og:image"
+            content="https://elephant.my.id/assets/favico.png"
+        />
+        <meta name="theme-color" content="#718096" />
 
-        <div class="video-wrapper skeleton" id="video-wrapper">
-            <div class="video-placeholder">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Loading video player...</p>
+        <link rel="stylesheet" href="watch.css" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+            integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+        <link rel="manifest" href="/manifest.json" />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+    </head>
+    <body>
+        <header class="main-header">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-shapes logo-icon"></i>
+                    <span>Elephime</span>
+                </a>
+                <button
+                    class="dark-mode-toggle"
+                    id="theme-toggle-button"
+                    aria-label="Toggle Dark Mode"
+                    title="Toggle Dark Mode"
+                >
+                    <i class="fas fa-moon"></i>
+                </button>
             </div>
-        </div>
+        </header>
 
-        <div class="video-controls">
-            <div class="quality-controls">
-                <h3><i class="fas fa-tv"></i> Quality</h3>
-                <nav class="resolutions" id="resolution-buttons" aria-label="Video resolutions"></nav>
+        <main class="watch-container">
+            <h1 id="video-title" class="video-title">
+                <span id="title-text" class="skeleton skeleton-text"></span>
+            </h1>
+
+            <div class="video-wrapper skeleton" id="video-wrapper">
+                <div class="video-placeholder">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading video player...</p>
+                </div>
             </div>
 
-            <div class="server-controls">
-                <h3><i class="fas fa-server"></i> Server</h3>
-                <nav class="servers" id="server-buttons" aria-label="Video servers"></nav>
+            <div class="video-controls">
+                <div class="quality-controls">
+                    <h3><i class="fas fa-tv"></i> Quality</h3>
+                    <nav
+                        class="resolutions"
+                        id="resolution-buttons"
+                        aria-label="Video resolutions"
+                    ></nav>
+                </div>
+
+                <div class="server-controls">
+                    <h3><i class="fas fa-server"></i> Server</h3>
+                    <nav
+                        class="servers"
+                        id="server-buttons"
+                        aria-label="Video servers"
+                    ></nav>
+                </div>
+
+                <div class="download-controls">
+                    <h3><i class="fas fa-download"></i> Downloads</h3>
+                    <div
+                        class="downloads"
+                        id="download-links"
+                        aria-label="Download links"
+                    ></div>
+                </div>
             </div>
 
-            <div class="download-controls">
-                <h3><i class="fas fa-download"></i> Downloads</h3>
-                <div class="downloads" id="download-links" aria-label="Download links"></div>
+            <div class="episode-navigation">
+                <button id="prev-episode" class="episode-nav-btn" disabled>
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Previous Episode</span>
+                </button>
+                <a href="#" id="all-episodes-link" class="episode-nav-btn">
+                    <i class="fas fa-list"></i>
+                    <span>All Episodes</span>
+                </a>
+                <button id="next-episode" class="episode-nav-btn" disabled>
+                    <span>Next Episode</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
-        </div>
+        </main>
 
-        <div class="episode-navigation">
-            <button id="prev-episode" class="episode-nav-btn" disabled>
-                <i class="fas fa-arrow-left"></i>
-                <span>Previous Episode</span>
-            </button>
-            <a href="#" id="all-episodes-link" class="episode-nav-btn">
-                <i class="fas fa-list"></i>
-                <span>All Episodes</span>
-            </a>
-            <button id="next-episode" class="episode-nav-btn" disabled>
-                <span>Next Episode</span>
-                <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
-    </main>
-
-    <footer class="main-footer">
-        <div class="footer-content">
-            <p>&copy; 2025 Elephime</p>
-            <div class="social-links">
-                <a href="https://github.com/AlfianRafli/Elephime" aria-label="GitHub" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
-                <a href="https://discord.gg/Cby2ccN6Aq" aria-label="Discord" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i></a>
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>&copy; 2025 Elephime</p>
+                <div class="social-links">
+                    <a
+                        href="https://github.com/AlfianRafli/Elephime"
+                        aria-label="GitHub"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        ><i class="fab fa-github"></i
+                    ></a>
+                    <a
+                        href="https://discord.gg/Cby2ccN6Aq"
+                        aria-label="Discord"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        ><i class="fa-brands fa-discord"></i
+                    ></a>
+                </div>
             </div>
-        </div>
-    </footer>
+        </footer>
 
-    <script src="watch.js" defer></script>
-</body>
+        <script src="watch.js" defer></script>
+    </body>
 </html>

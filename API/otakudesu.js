@@ -2,13 +2,24 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const baseUrl = "https://otakudesu.best";
 
+const userAgents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15',
+    'Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0'
+];
+
+const getRandomUA = () => userAgents[Math.floor(Math.random() * userAgents.length)];
+
 // Configure axios for better performance
 const http = axios.create({
   baseURL: baseUrl,
-  timeout: 10000,
-  headers: {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-  }
+  timeout: 10000
+});
+
+http.interceptors.request.use((config) => {
+    config.headers['User-Agent'] = getRandomUA();
+    return config;
 });
 
 // Helper functions
