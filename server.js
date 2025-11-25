@@ -35,11 +35,15 @@ const cacheMiddleware = (req, res, next) => {
 };
 
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 150,
-    message: { error: "Too many requests, please try again later" }
+  windowMs: 1 * 60 * 1000,
+  max: 300,               
+  standardHeaders: true,  
+  legacyHeaders: false,    
+  message: { 
+      status: 429, 
+      error: "Terlalu banyak request, santai dulu kawan! Coba lagi dalam 1 menit." 
+  }
 });
-
 app.use(
     cors({
         origin: "http://elephant.my.id"
