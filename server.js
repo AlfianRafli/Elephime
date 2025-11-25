@@ -35,6 +35,7 @@ const cacheMiddleware = (req, res, next) => {
 };
 
 const apiLimiter = rateLimit({
+<<<<<<< HEAD
   windowMs: 1 * 60 * 1000,
   max: 300,               
   standardHeaders: true,  
@@ -43,6 +44,16 @@ const apiLimiter = rateLimit({
       status: 429, 
       error: "Terlalu banyak request, santai dulu kawan! Coba lagi dalam 1 menit." 
   }
+=======
+    windowMs: 1 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        status: 429,
+        error: "Too many requests, please try again later"
+    }
+>>>>>>> b296177 (+ Limit)
 });
 app.use(
     cors({
